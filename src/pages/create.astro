@@ -1,0 +1,10 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Editor from '../components/Editor';
+---
+
+<Layout>
+  <main class="max-w-[37em]" style="margin: 6rem auto; padding: 2rem 1.25rem;">
+    <Editor client:only="react" />
+  </main>
+</Layout>

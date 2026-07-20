@@ -1,8 +1,10 @@
 ---
+import '../styles/global.css';
 import '../styles/globals.css';
+import { DynamicIsland } from '../components/DynamicIsland';
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
@@ -12,6 +14,7 @@ import '../styles/globals.css';
 		<title>Astro Basics</title>
 	</head>
 	<body>
+		<DynamicIsland client:load />
 		<slot />
 	</body>
 </html>
