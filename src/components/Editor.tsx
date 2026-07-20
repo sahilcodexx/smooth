@@ -11,12 +11,33 @@ export default function Editor() {
   const [content, setContent] = useState('');
   
   // Keep the same ID for this session so we overwrite the same file
-  const postId = useRef(Date.now().toString());
+  const postId = useRef('draft');
+
+  // Load initial draft from localStorage on mount
+  useEffect(() => {
+    const savedId = localStorage.getItem('smooth_draft_id');
+    const savedContent = localStorage.getItem('smooth_draft_content') || '';
+    
+    if (savedId) {
+      postId.current = savedId;
+    } else {
+      const newId = Date.now().toString();
+      postId.current = newId;
+      localStorage.setItem('smooth_draft_id', newId);
+    }
+    
+    if (savedContent) {
+      setContent(savedContent);
+    }
+  }, []);
 
   // Debounced autosave
   useEffect(() => {
     if (!content) return;
     setStatus('Saving...');
+    
+    localStorage.setItem('smooth_draft_content', content);
+    localStorage.setItem('smooth_draft_id', postId.current);
     
     // Use first line as title, fallback to ID
     const lines = content.split('\n');
@@ -63,7 +84,7 @@ export default function Editor() {
         placeholder: 'Start writing...',
       }),
     ],
-    content: '',
+    content: typeof window !== 'undefined' ? localStorage.getItem('smooth_draft_content') || '' : '',
     editorProps: {
       attributes: {
         class: 'outline-none focus:outline-none min-h-[500px]',
@@ -96,6 +117,16 @@ export default function Editor() {
     },
   });
 
+  const handleNewPost = () => {
+    const newId = Date.now().toString();
+    postId.current = newId;
+    localStorage.setItem('smooth_draft_id', newId);
+    localStorage.removeItem('smooth_draft_content');
+    editor?.commands.setContent('');
+    setContent('');
+    setStatus('New post started');
+  };
+
   return (
     <div className="relative">
       <div className="absolute -top-12 right-0 text-sm text-zinc-500 font-mono transition-opacity">
@@ -104,7 +135,7 @@ export default function Editor() {
       <div className="typeset typeset-article w-full pb-24" style={{ '--typeset-size': `${fontSize}px` } as React.CSSProperties}>
         <EditorContent editor={editor} />
       </div>
-      <EditorToolbar editor={editor} fontSize={fontSize} setFontSize={setFontSize} />
+      <EditorToolbar editor={editor} fontSize={fontSize} setFontSize={setFontSize} onNewPost={handleNewPost} />
     </div>
   );
 }

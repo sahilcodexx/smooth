@@ -38,9 +38,10 @@ interface EditorToolbarProps {
   editor: Editor | null;
   fontSize: number;
   setFontSize: React.Dispatch<React.SetStateAction<number>>;
+  onNewPost: () => void;
 }
 
-export function EditorToolbar({ editor, fontSize, setFontSize }: EditorToolbarProps) {
+export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost }: EditorToolbarProps) {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export function EditorToolbar({ editor, fontSize, setFontSize }: EditorToolbarPr
 
   return (
     <TooltipProvider>
-      <div className="dark fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-3 py-2 bg-[#09090b]/80 backdrop-blur-xl border border-zinc-800/50 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.5)] max-w-[calc(100vw-2rem)] overflow-x-auto scrollbar-none">
+      <div className={`dark fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-3 py-2 bg-[#09090b]/96 backdrop-blur-xl border border-zinc-800/80 rounded-full max-w-[calc(100vw-2rem)] overflow-x-auto scrollbar-none ring-1 ring-white/10 ${isDark ? 'shadow-[0_12px_40px_rgba(0,0,0,0.6)]' : 'shadow-none'}`}>
         {/* Bold */}
         <Tooltip>
           <TooltipTrigger asChild>
@@ -207,6 +208,23 @@ export function EditorToolbar({ editor, fontSize, setFontSize }: EditorToolbarPr
 
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
+
+        {/* Create Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 transition-colors"
+              onClick={onNewPost}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Start a new post</p></TooltipContent>
+        </Tooltip>
 
         <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
 
