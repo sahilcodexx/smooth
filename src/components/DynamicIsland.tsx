@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, MoreHorizontal, X, CornerDownLeft } from 'lucide-react';
 
@@ -28,6 +28,18 @@ const notifications = [
 
 export function DynamicIsland() {
   const [expanded, setExpanded] = useState(false);
+  const islandRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const handleClick = (e: MouseEvent) => {
+      if (islandRef.current && !islandRef.current.contains(e.target as Node)) {
+        setExpanded(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [expanded]);
 
   const BEZEL_H = 6;
   const NOTCH_H = 28;
@@ -45,6 +57,7 @@ export function DynamicIsland() {
       {/* Notch + fillets, centered */}
       <div className="relative flex justify-center">
         <motion.div
+          ref={islandRef}
           layout
           className="relative origin-top"
           initial={false}
@@ -112,6 +125,7 @@ export function DynamicIsland() {
               {expanded && (
                 <motion.div 
                   className="absolute inset-0 pt-7 px-4 pb-3.5 flex flex-col w-full h-full z-10"
+                  onClick={(e) => { if (e.target === e.currentTarget) setExpanded(false); }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
