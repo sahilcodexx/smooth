@@ -21,13 +21,13 @@ html,
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-geist);
+  font-family: var(--font-choice, var(--font-geist));
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Tailwind utility fallbacks since Tailwind is not installed */
 .max-w-\[37em\] {
-  max-width: 37em;
+  max-width: var(--reading-width, 37em);
 }
 
 .grayscale {

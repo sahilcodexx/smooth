@@ -19,7 +19,8 @@ import {
   SquareSlash,
   Code,
   Moon,
-  Sun
+  Sun,
+  Trash2
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Separator } from './ui/separator';
@@ -39,9 +40,10 @@ interface EditorToolbarProps {
   fontSize: number;
   setFontSize: React.Dispatch<React.SetStateAction<number>>;
   onNewPost: () => void;
+  onDeletePost?: () => void;
 }
 
-export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost }: EditorToolbarProps) {
+export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDeletePost }: EditorToolbarProps) {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -249,6 +251,26 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost }: Edit
         </Tooltip>
 
         <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
+
+        {/* Delete Post */}
+        {onDeletePost && (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 rounded-full text-red-400 hover:text-red-300 hover:bg-red-950/20 transition-colors"
+                  onClick={onDeletePost}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-zinc-900 text-red-200 border-zinc-800"><p>Delete Post</p></TooltipContent>
+            </Tooltip>
+            <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
+          </>
+        )}
 
         {/* Theme Toggle */}
         <Tooltip>

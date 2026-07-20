@@ -46,3 +46,36 @@ export const POST: APIRoute = async ({ request }) => {
     });
   }
 }
+
+export const DELETE: APIRoute = async ({ request }) => {
+  try {
+    const data = await request.json();
+    const { id, ids } = data;
+
+    if (!id && (!ids || ids.length === 0)) {
+      return new Response(JSON.stringify({ error: 'ID or IDs array is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    const sql = neon(import.meta.env.DATABASE_URL);
+    
+    if (ids && Array.isArray(ids)) {
+      await sql`DELETE FROM posts WHERE id = ANY(${ids})`;
+    } else if (id) {
+      await sql`DELETE FROM posts WHERE id = ${id}`;
+    }
+
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (error) {
+    console.error('Error deleting posts:', error);
+    return new Response(JSON.stringify({ error: 'Failed to delete posts' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+};

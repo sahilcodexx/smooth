@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { neon } from '@neondatabase/serverless';
+import { HomeToolbar } from '../../components/HomeToolbar';
 
 export const prerender = false;
 
@@ -29,4 +30,5 @@ const htmlContent = marked(post.content);
     </div>
     <div class="typeset typeset-article max-w-[37em]" set:html={htmlContent}></div>
   </main>
+  <HomeToolbar client:load />
 </Layout>

@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { neon } from '@neondatabase/serverless';
-import { HomeToolbar } from '../components/HomeToolbar';
+import { PostFeed } from '../components/PostFeed';
 
 export const prerender = false;
 
@@ -15,62 +15,18 @@ try {
   console.error('Failed to fetch posts:', err);
   error = 'Could not load posts. Make sure DATABASE_URL is configured.';
 }
-
-const formatDate = (dateStr) => {
-  if (!dateStr) return '';
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
-};
 ---
 
 <Layout>
-  <main class="max-w-[37em]" style="margin: 6rem auto; padding: 2rem 1.25rem; font-family: var(--font-geist);">
-    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
-      <div>
-        <h1 style="margin: 0; font-size: 2.2rem; font-weight: 400; font-family: Georgia, Cambria, 'Times New Roman', serif; font-style: italic; letter-spacing: -0.01em; color: var(--color-foreground);">unmindful</h1>
-        <p style="margin: 0.3rem 0 0 0; font-size: 0.85rem; color: var(--color-muted-foreground); font-family: var(--font-geist);">write your random thought</p>
-      </div>
-      <a href="/create" style="text-decoration: none; padding: 0.5rem 1rem; background-color: var(--color-foreground); color: var(--color-background); border-radius: 9999px; font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">New post</a>
+  {error && (
+    <div style="max-width: 37em; margin: 6rem auto 0 auto; padding: 1rem; background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 0.5rem; color: #ef4444; font-size: 0.9rem; font-family: var(--font-geist);">
+      {error}
     </div>
-
-    {error && (
-      <div style="padding: 1rem; background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 0.5rem; color: #ef4444; font-size: 0.9rem; margin-bottom: 2rem;">
-        {error}
-      </div>
-    )}
-
-    <div style="display: flex; flex-direction: column; gap: 0; margin-top: 1rem;">
-      {posts.length > 0 ? (
-        posts.map((post) => (
-          <a href={`/posts/${post.id}`} style="text-decoration: none; display: block; padding: 0.75rem 0; border-bottom: 1px solid var(--color-border); transition: border-color 0.2s;" class="post-item">
-            <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;">
-              <h2 style="margin: 0; font-size: 1.05rem; font-weight: 400; color: var(--color-foreground); transition: color 0.2s;" class="post-title-link">
-                {post.title || 'Untitled Note'}
-              </h2>
-              <span style="font-size: 0.8rem; color: var(--color-muted-foreground); font-family: var(--font-geist-mono); flex-shrink: 0;">
-                {formatDate(post.created_at)}
-              </span>
-            </div>
-          </a>
-        ))
-      ) : (
-        <div style="text-align: center; padding: 4rem 1rem; border: 1px dashed var(--color-border); border-radius: 0.75rem;">
-          <p style="color: var(--color-muted-foreground); margin-bottom: 1.5rem; font-size: 0.95rem;">No posts yet. Start sharing your thoughts.</p>
-          <a href="/create" style="text-decoration: none; padding: 0.6rem 1.25rem; background-color: var(--color-foreground); color: var(--color-background); border-radius: 9999px; font-size: 0.85rem; font-weight: 500;">
-            Write your first post
-          </a>
-        </div>
-      )}
-    </div>
-  </main>
-  <HomeToolbar client:load />
+  )}
+  <PostFeed initialPosts={posts} client:load />
 </Layout>
 
-<style>
+<style is:global>
   .post-item:hover .post-title-link {
     color: #FF9500 !important;
   }

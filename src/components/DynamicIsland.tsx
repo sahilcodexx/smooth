@@ -74,7 +74,7 @@ export function DynamicIsland() {
   }, [expanded]);
 
   const BEZEL_H = 6;
-  const NOTCH_H = 28;
+  const NOTCH_H = 32;
   const NOTCH_W = 180;
   const R = 16; // fillet radius
 
@@ -136,6 +136,8 @@ export function DynamicIsland() {
           {/* The actual notch body */}
           <motion.div
             layout
+            onMouseEnter={() => !expanded && setExpanded(true)}
+            onMouseLeave={() => expanded && setExpanded(false)}
             onClick={() => !expanded && setExpanded(true)}
             className="w-full h-full bg-black text-white overflow-hidden flex flex-col items-center justify-start relative pointer-events-auto"
             style={{ cursor: expanded ? 'default' : 'pointer' }}

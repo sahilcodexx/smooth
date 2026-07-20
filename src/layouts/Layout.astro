@@ -12,6 +12,14 @@ import { DynamicIsland } from '../components/DynamicIsland';
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Astro Basics</title>
+		<script is:inline>
+			const theme = localStorage.getItem('theme') || 'dark';
+			if (theme === 'light') {
+				document.documentElement.classList.remove('dark');
+			} else {
+				document.documentElement.classList.add('dark');
+			}
+		</script>
 	</head>
 	<body>
 		<DynamicIsland client:load />
