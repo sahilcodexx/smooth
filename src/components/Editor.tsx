@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
+import Image from '@tiptap/extension-image';
 import { Markdown } from 'tiptap-markdown';
 import { EditorToolbar } from './EditorToolbar';
 
@@ -49,10 +50,15 @@ export default function Editor() {
     return () => clearTimeout(timer);
   }, [content]);
 
+  const [fontSize, setFontSize] = useState(15);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Markdown,
+      Image.configure({
+        allowBase64: true,
+      }),
       Placeholder.configure({
         placeholder: 'Start writing...',
       }),
@@ -60,8 +66,30 @@ export default function Editor() {
     content: '',
     editorProps: {
       attributes: {
-        class: 'focus:outline-none min-h-[80vh]',
+        class: 'outline-none focus:outline-none min-h-[500px]',
       },
+      handlePaste(view, event) {
+        const items = Array.from(event.clipboardData?.items || []);
+        const imageItem = items.find(item => item.type.indexOf('image') === 0);
+        
+        if (imageItem) {
+          const file = imageItem.getAsFile();
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              const src = e.target?.result as string;
+              view.dispatch(
+                view.state.tr.replaceSelectionWith(
+                  view.state.schema.nodes.image.create({ src })
+                )
+              );
+            };
+            reader.readAsDataURL(file);
+            return true; // handled
+          }
+        }
+        return false; // let default paste handle it
+      }
     },
     onUpdate: ({ editor }) => {
       setContent(editor.storage.markdown.getMarkdown());
@@ -73,10 +101,10 @@ export default function Editor() {
       <div className="absolute -top-12 right-0 text-sm text-zinc-500 font-mono transition-opacity">
         {status}
       </div>
-      <div className="typeset typeset-article w-full pb-24">
+      <div className="typeset typeset-article w-full pb-24" style={{ '--typeset-size': `${fontSize}px` } as React.CSSProperties}>
         <EditorContent editor={editor} />
       </div>
-      <EditorToolbar editor={editor} />
+      <EditorToolbar editor={editor} fontSize={fontSize} setFontSize={setFontSize} />
     </div>
   );
 }

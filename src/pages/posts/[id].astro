@@ -27,6 +27,6 @@ const htmlContent = marked(post.content);
       <a href="/" style="text-decoration: none; padding: 0.5rem 1rem; color: var(--muted-foreground); font-family: 'Geist Variable', sans-serif;">&larr; Back home</a>
       <a href="/create" style="text-decoration: none; padding: 0.5rem 1rem; background-color: var(--foreground); color: var(--background); border-radius: 0.375rem; font-weight: 500; font-family: 'Geist Variable', sans-serif;">Write</a>
     </div>
-    <div class="typeset typeset-article" set:html={htmlContent}></div>
+    <div class="typeset typeset-article max-w-[37em]" set:html={htmlContent}></div>
   </main>
 </Layout>

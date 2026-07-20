@@ -36,9 +36,11 @@ import {
 
 interface EditorToolbarProps {
   editor: Editor | null;
+  fontSize: number;
+  setFontSize: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export function EditorToolbar({ editor }: EditorToolbarProps) {
+export function EditorToolbar({ editor, fontSize, setFontSize }: EditorToolbarProps) {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -126,11 +128,27 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
         <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
 
-        {/* Font Size (Visual only for now since typeset defines size) */}
+        {/* Font Size */}
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100"><Minus className="h-4 w-4" /></Button>
-          <div className="px-2 py-1 bg-zinc-800/50 rounded-md text-xs font-mono text-zinc-400 select-none">15PX</div>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100"><Plus className="h-4 w-4" /></Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100"
+            onClick={() => setFontSize(prev => Math.max(12, prev - 1))}
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
+          <div className="px-2 py-1 bg-zinc-800/50 rounded-md text-xs font-mono text-zinc-400 select-none w-10 text-center">
+            {fontSize}PX
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100"
+            onClick={() => setFontSize(prev => Math.min(24, prev + 1))}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
         </div>
 
         <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
@@ -138,7 +156,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
         {/* Format Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 rounded-full gap-1 text-zinc-300 font-normal px-4 hover:bg-zinc-800">
+            <Button variant="ghost" className="h-8 rounded-full gap-1 text-zinc-300 hover:text-zinc-100 font-normal px-4 hover:bg-zinc-800">
               Format <ChevronDown className="h-3 w-3 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
