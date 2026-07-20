@@ -59,7 +59,7 @@ export function EditorToolbar({ editor }: EditorToolbarProps) {
 
   return (
     <TooltipProvider>
-      <div className="dark fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-3 py-2 bg-[#09090b]/80 backdrop-blur-xl border border-zinc-800/50 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.5)]">
+      <div className="dark fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-3 py-2 bg-[#09090b]/80 backdrop-blur-xl border border-zinc-800/50 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.5)] max-w-[calc(100vw-2rem)] overflow-x-auto scrollbar-none">
         {/* Bold */}
         <Tooltip>
           <TooltipTrigger asChild>

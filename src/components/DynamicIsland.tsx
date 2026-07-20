@@ -24,6 +24,34 @@ const notifications = [
     message: "Can you review the PR when you're free?",
     time: '12m',
   },
+  {
+    initials: 'RK',
+    color: '#FF9500',
+    name: 'Ravi Kumar',
+    message: 'Deployed v2.3 to staging, looks good so far',
+    time: '18m',
+  },
+  {
+    initials: 'SS',
+    color: '#FF2D55',
+    name: 'Sara Singh',
+    message: 'The figma file has been updated with the new flows',
+    time: '25m',
+  },
+  {
+    initials: 'DG',
+    color: '#5856D6',
+    name: 'Dev Gupta',
+    message: 'Can we push the standup to 11:30 today?',
+    time: '32m',
+  },
+  {
+    initials: 'NK',
+    color: '#30B0C7',
+    name: 'Neha Kapoor',
+    message: 'Merged the auth PR, ready for review on prod',
+    time: '45m',
+  },
 ];
 
 export function DynamicIsland() {
@@ -47,7 +75,7 @@ export function DynamicIsland() {
   const R = 16; // fillet radius
 
   const EXP_W = 380;
-  const EXP_H = 310;
+  const EXP_H = 330;
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
@@ -97,7 +125,7 @@ export function DynamicIsland() {
             className="w-full h-full bg-black text-white overflow-hidden flex flex-col items-center justify-start relative pointer-events-auto"
             style={{ cursor: expanded ? 'default' : 'pointer' }}
             animate={{
-              borderRadius: expanded ? '0 0 22px 22px' : '0 0 14px 14px',
+              borderRadius: expanded ? '0 0 36px 36px' : '0 0 14px 14px',
             }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
@@ -124,7 +152,7 @@ export function DynamicIsland() {
             <AnimatePresence>
               {expanded && (
                 <motion.div 
-                  className="absolute inset-0 pt-7 px-4 pb-3.5 flex flex-col w-full h-full z-10"
+                  className="absolute inset-0 pt-7 px-5 pb-6 flex flex-col w-full h-full z-10"
                   onClick={(e) => { if (e.target === e.currentTarget) setExpanded(false); }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -139,7 +167,7 @@ export function DynamicIsland() {
                   </div>
                   
                   {/* Notifications */}
-                  <div className="flex flex-col gap-0 flex-1 overflow-y-auto">
+                  <div className="flex flex-col gap-0 flex-1 overflow-y-auto scrollbar-none scroll-mask py-1">
                     {notifications.map((n, i) => (
                       <div key={i} className="flex gap-3 items-start py-2.5 px-0.5">
                         <div 

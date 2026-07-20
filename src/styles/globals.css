@@ -75,3 +75,17 @@ html {
   scrollbar-color: var(--color-border) transparent;
 }
 
+/* Utilities to hide scrollbar and create smooth fading scroll masks */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scroll-mask {
+  mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent);
+}
+
