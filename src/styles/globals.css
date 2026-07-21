@@ -7,14 +7,16 @@
   --color-foreground: #09090b;
   --color-muted-foreground: #71717a;
   --color-border: #e4e4e7;
+  --dynamic-island-bg: #000000;
 }
 
 .dark {
   /* Editorial Dark Theme Colors */
-  --color-background: #09090b;
+  --color-background: #0a0a0a;
   --color-foreground: #fafafa;
   --color-muted-foreground: #a1a1aa;
   --color-border: #27272a;
+  --dynamic-island-bg: #171717;
 }
 
 html,

@@ -278,7 +278,7 @@ export function AuthCard({ neonAuthUrl }: { neonAuthUrl?: string }) {
   };
 
   return (
-    <div className="grid w-full max-w-5xl min-h-[580px] gap-0 p-0 md:grid-cols-2 overflow-hidden bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl shadow-xl dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-200">
+    <div className="grid w-full max-w-5xl min-h-[580px] gap-0 p-0 md:grid-cols-2 overflow-hidden bg-white dark:bg-[#171717] border border-zinc-200 dark:border-zinc-800/80 rounded-2xl shadow-xl dark:shadow-[0_12px_40px_rgba(0,0,0,0.6)] ring-1 ring-black/5 dark:ring-white/10 transition-colors duration-200">
       {/* Brand Left Panel (md and up) - Premium Dark Contrast Panel always */}
       <div className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-b from-zinc-900 to-zinc-950 p-12 md:p-14 md:flex border-r border-zinc-900">
         <div className="bg-zinc-800/20 pointer-events-none absolute -top-24 -right-24 size-64 rounded-full blur-3xl" />
@@ -312,7 +312,7 @@ export function AuthCard({ neonAuthUrl }: { neonAuthUrl?: string }) {
       </div>
 
       {/* Forms Panel (Right) - Light/Dark Adaptive */}
-      <div className="flex flex-col justify-center gap-6 p-12 md:p-14 bg-zinc-50/50 dark:bg-zinc-950/40">
+      <div className="flex flex-col justify-center gap-6 p-12 md:p-14 bg-zinc-50/50 dark:bg-[#171717]">
         <div className="flex flex-col gap-1.5">
           <span className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
             {isSignUp ? "Create an account" : "Welcome back"}
@@ -335,7 +335,7 @@ export function AuthCard({ neonAuthUrl }: { neonAuthUrl?: string }) {
         )}
 
         <button
-          className="w-full h-11 flex items-center justify-center gap-2 border border-zinc-200 dark:border-zinc-850 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-950 text-sm rounded-xl font-medium transition-all cursor-pointer"
+          className="w-full h-11 flex items-center justify-center gap-2 border border-zinc-200 dark:border-[#2e2e33] hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-200 bg-white dark:bg-[#202024] text-sm rounded-xl font-medium transition-all cursor-pointer"
           type="button"
           onClick={handleGoogleSignIn}
           disabled={loading}
@@ -374,7 +374,7 @@ export function AuthCard({ neonAuthUrl }: { neonAuthUrl?: string }) {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-11 px-3 w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 text-zinc-900 dark:text-zinc-200 placeholder-zinc-450 dark:placeholder-zinc-700 rounded-xl outline-none focus:ring-2 focus:ring-zinc-500/30 dark:focus:ring-zinc-400/20 transition-all text-sm"
+              className="h-11 px-3 w-full bg-white dark:bg-[#202024] border border-zinc-200 dark:border-[#2e2e33] text-zinc-900 dark:text-zinc-200 placeholder-zinc-450 dark:placeholder-zinc-500 rounded-xl outline-none focus:ring-2 focus:ring-zinc-500/30 dark:focus:ring-zinc-400/20 transition-all text-sm"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -406,7 +406,7 @@ export function AuthCard({ neonAuthUrl }: { neonAuthUrl?: string }) {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-11 px-3 w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 text-zinc-900 dark:text-zinc-200 placeholder-zinc-450 dark:placeholder-zinc-700 rounded-xl outline-none focus:ring-2 focus:ring-zinc-500/30 dark:focus:ring-zinc-400/20 transition-all text-sm"
+              className="h-11 px-3 w-full bg-white dark:bg-[#202024] border border-zinc-200 dark:border-[#2e2e33] text-zinc-900 dark:text-zinc-200 placeholder-zinc-450 dark:placeholder-zinc-500 rounded-xl outline-none focus:ring-2 focus:ring-zinc-500/30 dark:focus:ring-zinc-400/20 transition-all text-sm"
             />
           </div>
 

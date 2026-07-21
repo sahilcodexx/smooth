@@ -251,9 +251,13 @@ export function PostFeed({
       <main
         className="max-w-[37em]"
         style={{
-          margin: "6rem auto",
-          padding: "2rem 1.25rem",
+          margin: "0 auto",
+          padding: "6rem 1.25rem 6rem 1.25rem",
           fontFamily: "var(--font-choice, var(--font-geist))",
+          minHeight: "100vh",
+          boxSizing: "border-box",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
         <div

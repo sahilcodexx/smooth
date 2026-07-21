@@ -95,7 +95,7 @@ export function DynamicIsland() {
   return (
     <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
       {/* Full-width thin bezel bar — always visible */}
-      <div className="absolute top-0 left-0 right-0 bg-black z-10" style={{ height: BEZEL_H }} />
+      <div className="absolute top-0 left-0 right-0 z-10" style={{ height: BEZEL_H, backgroundColor: "var(--dynamic-island-bg)" }} />
 
       {/* Notch + fillets, centered */}
       <div className="relative flex justify-center">
@@ -118,10 +118,10 @@ export function DynamicIsland() {
             className="absolute pointer-events-none z-20"
             style={{ 
               top: BEZEL_H, 
-              right: 'calc(100% - 1px)', 
+              right: 'calc(100% - 1.5px)', 
               width: R, 
               height: R,
-              background: `radial-gradient(circle at 0% 100%, transparent ${R}px, black ${R}px)`,
+              background: `radial-gradient(circle at 0% 100%, transparent ${R - 0.5}px, var(--dynamic-island-bg) ${R + 0.5}px)`,
             }}
           />
           {/* Right fillet */}
@@ -129,10 +129,10 @@ export function DynamicIsland() {
             className="absolute pointer-events-none z-20"
             style={{ 
               top: BEZEL_H, 
-              left: 'calc(100% - 1px)', 
+              left: 'calc(100% - 1.5px)', 
               width: R, 
               height: R,
-              background: `radial-gradient(circle at 100% 100%, transparent ${R}px, black ${R}px)`,
+              background: `radial-gradient(circle at 100% 100%, transparent ${R - 0.5}px, var(--dynamic-island-bg) ${R + 0.5}px)`,
             }}
           />
 
@@ -141,8 +141,8 @@ export function DynamicIsland() {
             onMouseEnter={() => !expanded && setExpanded(true)}
             onMouseLeave={() => expanded && setExpanded(false)}
             onClick={() => !expanded && setExpanded(true)}
-            className="w-full h-full bg-black text-white overflow-hidden flex flex-col items-center justify-start relative pointer-events-auto"
-            style={{ cursor: expanded ? 'default' : 'pointer' }}
+            className="w-full h-full text-white overflow-hidden flex flex-col items-center justify-start relative pointer-events-auto border border-t-0 border-transparent dark:border-zinc-800/80 shadow-none dark:shadow-[0_8px_30px_rgba(0,0,0,0.85)]"
+            style={{ backgroundColor: "var(--dynamic-island-bg)", cursor: expanded ? 'default' : 'pointer' }}
             animate={{
               borderRadius: expanded ? '0 0 36px 36px' : '0 0 14px 14px',
             }}
@@ -151,16 +151,15 @@ export function DynamicIsland() {
 
             {/* === Collapsed State === */}
             <motion.div 
-              className="absolute inset-0 flex items-center justify-between px-3 z-10"
-              style={{ paddingTop: BEZEL_H }}
+              className="absolute inset-x-0 bottom-0 top-[6px] flex items-center justify-between px-3.5 z-10"
               animate={{ opacity: expanded ? 0 : 1 }}
               transition={{ duration: 0.12 }}
             >
-              <div className="w-[18px] h-[18px] rounded-full bg-zinc-700 overflow-hidden flex-shrink-0">
+              <div className="w-[19px] h-[19px] rounded-full overflow-hidden flex-shrink-0 ring-1 ring-zinc-500/20 dark:ring-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,0.1)]">
                 <img src="https://pbs.twimg.com/profile_images/2078590852268732416/iAHBhHRM_400x400.jpg" alt="" className="w-full h-full object-cover" />
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
-                <img src="https://eshop.macsales.com/blog/wp-content/uploads/2020/12/Notes-Icon-Big-Sur.png" alt="" className="w-[18px] h-[18px] object-contain flex-shrink-0" />
+                <img src="https://eshop.macsales.com/blog/wp-content/uploads/2020/12/Notes-Icon-Big-Sur.png" alt="" className="w-[19px] h-[19px] object-contain flex-shrink-0 [filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.2))] dark:[filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.3))]" />
                 <span className="text-[10px] font-bold text-[#FF9500]">2</span>
               </div>
             </motion.div>

@@ -10,7 +10,7 @@ const user = await getSessionUser(Astro.request.headers.get('Cookie'));
 ---
 
 <Layout>
-  <main class="max-w-[37em]" style="margin: 6rem auto; padding: 2rem 1.25rem;">
+  <main class="max-w-[37em]" style="margin: 0 auto; padding: 6rem 1.25rem; min-height: 100vh; box-sizing: border-box; display: flex; flex-direction: column;">
     <Editor client:only="react" userId={user?.id || 'guest'} />
   </main>
 </Layout>
