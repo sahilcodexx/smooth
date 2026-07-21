@@ -19,9 +19,9 @@ try {
   const sql = neon(import.meta.env.DATABASE_URL);
   // Fetch posts scoped strictly to the authenticated user
   posts = await sql`
-    SELECT id, title, created_at 
-    FROM posts 
-    WHERE user_id = ${user.id} 
+    SELECT id, title, created_at
+    FROM posts
+    WHERE user_id = ${user.id}
     ORDER BY created_at DESC;
   `;
 } catch (err) {
@@ -36,7 +36,7 @@ try {
       {error}
     </div>
   )}
-  <PostFeed initialPosts={posts} client:load />
+  <PostFeed initialPosts={posts} neonAuthUrl={import.meta.env.NEON_AUTH_BASE_URL} initialUser={{ id: user.id, email: user.email }} client:load />
 </Layout>
 
 <style is:global>

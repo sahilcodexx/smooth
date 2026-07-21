@@ -17,8 +17,8 @@ const sql = neon(import.meta.env.DATABASE_URL);
 
 // Fetch post from Neon database, scoped to owner
 const posts = await sql`
-  SELECT * FROM posts 
-  WHERE id = ${id} AND user_id = ${user.id} 
+  SELECT * FROM posts
+  WHERE id = ${id} AND user_id = ${user.id}
   LIMIT 1;
 `;
 const post = posts[0];
@@ -40,5 +40,5 @@ const htmlContent = marked(post.content);
     </div>
     <div class="typeset typeset-article max-w-[37em]" set:html={htmlContent}></div>
   </main>
-  <HomeToolbar client:load />
+  <HomeToolbar neonAuthUrl={import.meta.env.NEON_AUTH_BASE_URL} initialUser={{ id: user.id, email: user.email }} client:load />
 </Layout>

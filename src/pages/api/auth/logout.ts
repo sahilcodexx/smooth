@@ -1,13 +1,14 @@
 import type { APIRoute } from 'astro';
 import { neon } from '@neondatabase/serverless';
+import { clearSessionCookie } from '../../../lib/auth';
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request }) => {
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
-  headers.append('Set-Cookie', 'session_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Secure');
-  headers.append('Set-Cookie', 'better-auth.session_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Secure');
+  headers.append('Set-Cookie', clearSessionCookie('session_token', request.url));
+  headers.append('Set-Cookie', clearSessionCookie('better-auth.session_token', request.url));
 
   try {
     const cookieHeader = request.headers.get('Cookie');
@@ -20,8 +21,9 @@ export const POST: APIRoute = async ({ request }) => {
             await fetch(`${authUrl}/sign-out`, {
               method: 'POST',
               headers: {
-                'Cookie': cookieHeader
-              }
+                Cookie: cookieHeader,
+                Origin: new URL(request.url).origin,
+              },
             });
           } catch (err) {
             console.error('Error signing out from Neon Auth:', err);

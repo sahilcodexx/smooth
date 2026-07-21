@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { neon } from '@neondatabase/serverless';
 import crypto from 'node:crypto';
-import { initAuthTables, verifyPassword } from '../../../lib/auth';
+import { buildSessionCookie, initAuthTables, verifyPassword } from '../../../lib/auth';
 
 export const prerender = false;
 
@@ -46,7 +46,8 @@ export const POST: APIRoute = async ({ request }) => {
     // Create session token
     const token = crypto.randomBytes(32).toString('hex');
     const sessionId = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    const maxAge = 30 * 24 * 60 * 60; // 30 days
+    const expiresAt = new Date(Date.now() + maxAge * 1000);
 
     await sql`
       INSERT INTO sessions (id, user_id, token, expires_at)
@@ -57,7 +58,7 @@ export const POST: APIRoute = async ({ request }) => {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Set-Cookie': `session_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30 * 24 * 60 * 60}; Secure`
+        'Set-Cookie': buildSessionCookie(token, maxAge, request.url)
       }
     });
 

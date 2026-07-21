@@ -14,6 +14,6 @@ if (!user) {
 
 <Layout>
   <main class="max-w-[37em]" style="margin: 6rem auto; padding: 2rem 1.25rem;">
-    <Editor client:only="react" />
+    <Editor client:only="react" userId={user.id} />
   </main>
 </Layout>
