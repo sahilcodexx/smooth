@@ -1,6 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Editor from '../components/Editor';
+import { getSessionUser } from '../lib/auth';
+
+export const prerender = false;
+
+// Authenticate session
+const user = await getSessionUser(Astro.request.headers.get('Cookie'));
+if (!user) {
+  return Astro.redirect('/auth');
+}
 ---
 
 <Layout>

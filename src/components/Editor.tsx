@@ -60,8 +60,33 @@ export default function Editor() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const isNew = urlParams.get('new') === 'true';
+    const editId = urlParams.get('id');
 
-    if (isNew) {
+    if (editId) {
+      setStatus('Loading post...');
+      fetch(`/api/posts?id=${editId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.post) {
+            postId.current = editId;
+            localStorage.setItem('smooth_draft_id', editId);
+            localStorage.setItem('smooth_draft_content', data.post.content);
+            setContent(data.post.content);
+            if (editor) {
+              editor.commands.setContent(data.post.content);
+            }
+            setStatus('Saved');
+          } else {
+            setStatus('Error loading post');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          setStatus('Error loading post');
+        });
+      // Remove query parameter
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (isNew) {
       const newId = Date.now().toString();
       postId.current = newId;
       localStorage.setItem('smooth_draft_id', newId);
@@ -171,8 +196,11 @@ export default function Editor() {
 
   return (
     <div className="relative">
-      <div className="absolute -top-12 right-0 text-sm text-zinc-500 font-mono transition-opacity">
-        {status}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <a href="/" style={{ textDecoration: 'none', padding: '0.5rem 0', color: 'var(--color-muted-foreground)', fontFamily: 'var(--font-geist)', fontSize: '0.85rem', fontWeight: 500, display: 'flex', alignItems: 'center' }}>&larr; Back home</a>
+        <div className="text-sm text-zinc-500 font-mono">
+          {status}
+        </div>
       </div>
       <div className="typeset typeset-article w-full pb-24" style={{ '--typeset-size': `${fontSize}px` } as React.CSSProperties}>
         <EditorContent editor={editor} />

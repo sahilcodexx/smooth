@@ -1,0 +1,19 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { AuthCard } from '../components/AuthCard';
+
+export const prerender = false;
+const neonAuthUrl = import.meta.env.NEON_AUTH_BASE_URL;
+---
+
+<Layout>
+  <div class="auth-page flex flex-col justify-center items-center min-h-[100vh] px-4 py-12 md:py-16">
+    <AuthCard client:load neonAuthUrl={neonAuthUrl} />
+  </div>
+</Layout>
+
+<style>
+  .auth-page {
+    background-color: var(--color-background);
+  }
+</style>

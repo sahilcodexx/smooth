@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Sliders, Sun, Moon, Type, LayoutGrid, LogIn, Home } from 'lucide-react';
+import { Plus, Sliders, Sun, Moon, Type, LayoutGrid, LogIn, LogOut, Home } from 'lucide-react';
 import { Dock, DockIcon } from './ui/dock';
 import { Separator } from './ui/separator';
 import { 
@@ -19,6 +19,7 @@ export function HomeToolbar() {
   const [fontFamily, setFontFamily] = useState('sans');
   const [fontSize, setFontSize] = useState(15);
   const [readingWidth, setReadingWidth] = useState(37);
+  const [user, setUser] = useState<{ id: string; email: string } | null>(null);
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains('dark'));
@@ -31,7 +32,27 @@ export function HomeToolbar() {
     setReadingWidth(parseInt(savedWidth));
 
     applySettings(savedFont, parseInt(savedSize), parseInt(savedWidth));
+
+    // Fetch session user info
+    fetch('/api/auth/session')
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          setUser(data.user);
+        }
+      })
+      .catch(console.error);
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setUser(null);
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const toggleTheme = () => {
     const html = document.documentElement;
@@ -95,7 +116,7 @@ export function HomeToolbar() {
               <TooltipTrigger asChild>
                 <Home className="size-full" />
               </TooltipTrigger>
-              <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Go Home</p></TooltipContent>
+              <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800" sideOffset={12}><p>Go Home</p></TooltipContent>
             </Tooltip>
           </DockIcon>
 
@@ -110,7 +131,7 @@ export function HomeToolbar() {
               <TooltipTrigger asChild>
                 <Plus className="size-full" />
               </TooltipTrigger>
-              <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>New Post</p></TooltipContent>
+              <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800" sideOffset={12}><p>New Post</p></TooltipContent>
             </Tooltip>
           </DockIcon>
 
@@ -125,7 +146,7 @@ export function HomeToolbar() {
                     <Sliders className="size-full" />
                   </DropdownMenuTrigger>
                 </TooltipTrigger>
-                <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Reader Settings</p></TooltipContent>
+                <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800" sideOffset={12}><p>Reader Settings</p></TooltipContent>
               </Tooltip>
               <DropdownMenuContent className="w-64 bg-[#09090b] border border-zinc-800/80 shadow-2xl text-zinc-300 rounded-2xl p-4 flex flex-col gap-4" align="center" sideOffset={12}>
                 
@@ -211,22 +232,24 @@ export function HomeToolbar() {
               <TooltipTrigger asChild>
                 {isDark ? <Sun className="size-full" /> : <Moon className="size-full" />}
               </TooltipTrigger>
-              <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Toggle Theme</p></TooltipContent>
+              <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800" sideOffset={12}><p>Toggle Theme</p></TooltipContent>
             </Tooltip>
           </DockIcon>
 
           <Separator orientation="vertical" className="mx-0.5 h-6 bg-zinc-800/50 self-center shrink-0" />
 
-          {/* Sign In */}
+          {/* Sign In / Sign Out */}
           <DockIcon 
             className="text-zinc-400 hover:text-zinc-100 transition-colors"
-            onClick={() => alert('Sign in feature coming soon!')}
+            onClick={user ? handleLogout : () => window.location.href = '/auth'}
           >
             <Tooltip>
               <TooltipTrigger asChild>
-                <LogIn className="size-full" />
+                {user ? <LogOut className="size-full text-red-400/80 hover:text-red-400" /> : <LogIn className="size-full" />}
               </TooltipTrigger>
-              <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Sign In</p></TooltipContent>
+              <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800" sideOffset={12}>
+                <p>{user ? `Sign Out (${user.email})` : 'Sign In'}</p>
+              </TooltipContent>
             </Tooltip>
           </DockIcon>
 

@@ -101,10 +101,13 @@ export function DynamicIsland() {
       <div className="relative flex justify-center">
         <motion.div
           ref={islandRef}
-          layout
           className="relative origin-top"
           initial={false}
           animate={{
+            width: expanded ? EXP_W : NOTCH_W,
+            height: targetHeight,
+          }}
+          style={{
             width: expanded ? EXP_W : NOTCH_W,
             height: targetHeight,
           }}
@@ -115,7 +118,7 @@ export function DynamicIsland() {
             className="absolute pointer-events-none z-20"
             style={{ 
               top: BEZEL_H, 
-              right: '100%', 
+              right: 'calc(100% - 1px)', 
               width: R, 
               height: R,
               background: `radial-gradient(circle at 0% 100%, transparent ${R}px, black ${R}px)`,
@@ -126,7 +129,7 @@ export function DynamicIsland() {
             className="absolute pointer-events-none z-20"
             style={{ 
               top: BEZEL_H, 
-              left: '100%', 
+              left: 'calc(100% - 1px)', 
               width: R, 
               height: R,
               background: `radial-gradient(circle at 100% 100%, transparent ${R}px, black ${R}px)`,
@@ -135,7 +138,6 @@ export function DynamicIsland() {
 
           {/* The actual notch body */}
           <motion.div
-            layout
             onMouseEnter={() => !expanded && setExpanded(true)}
             onMouseLeave={() => expanded && setExpanded(false)}
             onClick={() => !expanded && setExpanded(true)}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Sliders, Sun, Moon, Type, LayoutGrid, LogIn, Trash2, X } from 'lucide-react';
+import { Plus, Sliders, Sun, Moon, Type, LayoutGrid, LogIn, LogOut, Trash2, X } from 'lucide-react';
 import { Dock, DockIcon } from './ui/dock';
 import { Separator } from './ui/separator';
 import { 
@@ -29,6 +29,7 @@ export function PostFeed({ initialPosts }: PostFeedProps) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [user, setUser] = useState<{ id: string; email: string } | null>(null);
 
   // Settings states
   const [isDark, setIsDark] = useState(true);
@@ -47,7 +48,27 @@ export function PostFeed({ initialPosts }: PostFeedProps) {
     setReadingWidth(parseInt(savedWidth));
 
     applySettings(savedFont, parseInt(savedSize), parseInt(savedWidth));
+
+    // Fetch session user info
+    fetch('/api/auth/session')
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) {
+          setUser(data.user);
+        }
+      })
+      .catch(console.error);
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setUser(null);
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const toggleTheme = () => {
     const html = document.documentElement;
@@ -137,8 +158,11 @@ export function PostFeed({ initialPosts }: PostFeedProps) {
   const formatDate = (dateStr: string) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${months[date.getUTCMonth()]} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   const truncateTitle = (title: string) => {
@@ -161,7 +185,13 @@ export function PostFeed({ initialPosts }: PostFeedProps) {
         <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: '2.2rem', fontWeight: 400, fontFamily: "Georgia, Cambria, 'Times New Roman', serif", fontStyle: 'italic', letterSpacing: '-0.01em', color: 'var(--color-foreground)' }}>unmindful</h1>
-            <p style={{ margin: '0.3rem 0 0 0', fontSize: '0.85rem', color: 'var(--color-muted-foreground)' }}>write your random thought</p>
+            {user ? (
+              <p style={{ margin: '0.3rem 0 0 0', fontSize: '0.85rem', color: 'var(--color-muted-foreground)' }}>
+                logged in as <span className="font-mono text-zinc-300 font-semibold">{user.email}</span>
+              </p>
+            ) : (
+              <p style={{ margin: '0.3rem 0 0 0', fontSize: '0.85rem', color: 'var(--color-muted-foreground)' }}>write your random thought</p>
+            )}
           </div>
           <a href="/create?new=true" style={{ textDecoration: 'none', padding: '0.5rem 1rem', backgroundColor: 'var(--color-foreground)', color: 'var(--color-background)', borderRadius: '9999px', fontSize: '0.85rem', fontWeight: 500, transition: 'opacity 0.2s' }}>New post</a>
         </div>
@@ -236,7 +266,7 @@ export function PostFeed({ initialPosts }: PostFeedProps) {
                     <TooltipTrigger asChild>
                       <Plus className="size-full" />
                     </TooltipTrigger>
-                    <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>New Post</p></TooltipContent>
+                    <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800" sideOffset={12}><p>New Post</p></TooltipContent>
                   </Tooltip>
                 </DockIcon>
 
@@ -251,7 +281,7 @@ export function PostFeed({ initialPosts }: PostFeedProps) {
                           <Sliders className="size-full" />
                         </DropdownMenuTrigger>
                       </TooltipTrigger>
-                      <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Reader Settings</p></TooltipContent>
+                      <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800" sideOffset={12}><p>Reader Settings</p></TooltipContent>
                     </Tooltip>
                     <DropdownMenuContent className="w-64 bg-[#09090b] border border-zinc-800/80 shadow-2xl text-zinc-300 rounded-2xl p-4 flex flex-col gap-4" align="center" sideOffset={12}>
                       {/* Font family selection */}
@@ -336,7 +366,7 @@ export function PostFeed({ initialPosts }: PostFeedProps) {
                     <TooltipTrigger asChild>
                       <Trash2 className="size-full" />
                     </TooltipTrigger>
-                    <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Delete Posts</p></TooltipContent>
+                    <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800" sideOffset={12}><p>Delete Posts</p></TooltipContent>
                   </Tooltip>
                 </DockIcon>
 
@@ -351,22 +381,24 @@ export function PostFeed({ initialPosts }: PostFeedProps) {
                     <TooltipTrigger asChild>
                       {isDark ? <Sun className="size-full" /> : <Moon className="size-full" />}
                     </TooltipTrigger>
-                    <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Toggle Theme</p></TooltipContent>
+                    <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800" sideOffset={12}><p>Toggle Theme</p></TooltipContent>
                   </Tooltip>
                 </DockIcon>
 
                 <Separator orientation="vertical" className="mx-0.5 h-6 bg-zinc-800/50 self-center shrink-0" />
 
-                {/* Sign In */}
+                {/* Sign In / Sign Out */}
                 <DockIcon 
                   className="text-zinc-400 hover:text-zinc-100 transition-colors"
-                  onClick={() => alert('Sign in feature coming soon!')}
+                  onClick={user ? handleLogout : () => window.location.href = '/auth'}
                 >
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <LogIn className="size-full" />
+                      {user ? <LogOut className="size-full text-red-400/80 hover:text-red-400" /> : <LogIn className="size-full" />}
                     </TooltipTrigger>
-                    <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Sign In</p></TooltipContent>
+                    <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800" sideOffset={12}>
+                      <p>{user ? `Sign Out (${user.email})` : 'Sign In'}</p>
+                    </TooltipContent>
                   </Tooltip>
                 </DockIcon>
               </Dock>
@@ -389,35 +421,35 @@ export function PostFeed({ initialPosts }: PostFeedProps) {
                 <Separator orientation="vertical" className="mx-0.5 h-6 bg-zinc-800/50 self-center shrink-0" />
 
                 {/* Batch Delete Confirm */}
-                <DockIcon 
-                  className={`text-red-400 hover:text-red-300 hover:bg-red-950/20 transition-colors ${selectedIds.size === 0 ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}
-                  onClick={handleBatchDelete}
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DockIcon 
+                      className={`text-red-400 hover:text-red-300 hover:bg-red-950/20 transition-colors ${selectedIds.size === 0 ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}
+                      onClick={handleBatchDelete}
+                    >
                       <Trash2 className="size-full" />
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-zinc-900 text-red-200 border-zinc-800"><p>Delete Selected</p></TooltipContent>
-                  </Tooltip>
-                </DockIcon>
+                    </DockIcon>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-zinc-900 text-red-200 border-zinc-800" sideOffset={12}><p>Delete Selected</p></TooltipContent>
+                </Tooltip>
 
                 <Separator orientation="vertical" className="mx-0.5 h-6 bg-zinc-800/50 self-center shrink-0" />
 
                 {/* Cancel Delete Mode */}
-                <DockIcon 
-                  className="text-zinc-400 hover:text-zinc-100 transition-colors"
-                  onClick={() => {
-                    setIsDeleteMode(false);
-                    setSelectedIds(new Set());
-                  }}
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DockIcon 
+                      className="text-zinc-400 hover:text-zinc-100 transition-colors"
+                      onClick={() => {
+                        setIsDeleteMode(false);
+                        setSelectedIds(new Set());
+                      }}
+                    >
                       <X className="size-full" />
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Cancel</p></TooltipContent>
-                  </Tooltip>
-                </DockIcon>
+                    </DockIcon>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800" sideOffset={12}><p>Cancel</p></TooltipContent>
+                </Tooltip>
               </Dock>
             </motion.div>
           )}

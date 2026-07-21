@@ -2,22 +2,32 @@
 import Layout from '../../layouts/Layout.astro';
 import { neon } from '@neondatabase/serverless';
 import { HomeToolbar } from '../../components/HomeToolbar';
+import { getSessionUser } from '../../lib/auth';
 
 export const prerender = false;
+
+// Authenticate session
+const user = await getSessionUser(Astro.request.headers.get('Cookie'));
+if (!user) {
+  return Astro.redirect('/auth');
+}
 
 const { id } = Astro.params;
 const sql = neon(import.meta.env.DATABASE_URL);
 
-// Fetch post from Neon database
-const posts = await sql`SELECT * FROM posts WHERE id = ${id}`;
+// Fetch post from Neon database, scoped to owner
+const posts = await sql`
+  SELECT * FROM posts 
+  WHERE id = ${id} AND user_id = ${user.id} 
+  LIMIT 1;
+`;
 const post = posts[0];
 
 if (!post) {
-  return Astro.redirect('/404');
+  return Astro.redirect('/');
 }
 
-// Convert markdown to HTML on the server, or we can just render it. 
-// Actually, typeset works great with raw markdown rendered to HTML. Let's use marked.
+// Convert markdown to HTML on the server
 import { marked } from 'marked';
 const htmlContent = marked(post.content);
 ---
@@ -25,8 +35,8 @@ const htmlContent = marked(post.content);
 <Layout>
   <main class="max-w-[37em]" style="margin: 6rem auto; padding: 2rem 1.25rem;">
     <div style="margin-bottom: 2rem; display: flex; justify-content: space-between;">
-      <a href="/" style="text-decoration: none; padding: 0.5rem 1rem; color: var(--muted-foreground); font-family: 'Geist Variable', sans-serif;">&larr; Back home</a>
-      <a href="/create" style="text-decoration: none; padding: 0.5rem 1rem; background-color: var(--foreground); color: var(--background); border-radius: 0.375rem; font-weight: 500; font-family: 'Geist Variable', sans-serif;">Write</a>
+      <a href="/" style="text-decoration: none; padding: 0.5rem 0; color: var(--color-muted-foreground); font-family: var(--font-geist); font-size: 0.85rem; font-weight: 500; display: flex; align-items: center;">&larr; Back home</a>
+      <a href={`/create?id=${id}`} style="text-decoration: none; padding: 0.5rem 1rem; background-color: var(--color-foreground); color: var(--color-background); border-radius: 9999px; font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s; font-family: var(--font-geist);" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Edit</a>
     </div>
     <div class="typeset typeset-article max-w-[37em]" set:html={htmlContent}></div>
   </main>
