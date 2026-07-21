@@ -68,14 +68,13 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
         {/* Bold */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`h-8 w-8 rounded-full transition-colors ${editor.isActive('bold') ? 'bg-zinc-800 text-zinc-50' : 'text-zinc-400 hover:text-zinc-100'}`}
+            <button
+              type="button"
+              className={`h-8 w-8 rounded-full transition-colors flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none ${editor.isActive('bold') ? 'bg-zinc-800 text-zinc-50' : 'text-zinc-400 hover:text-zinc-100'}`}
               onClick={() => editor.chain().focus().toggleBold().run()}
             >
               <Bold className="h-4 w-4" />
-            </Button>
+            </button>
           </TooltipTrigger>
           <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Bold</p></TooltipContent>
         </Tooltip>
@@ -83,14 +82,13 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
         {/* Italic */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`h-8 w-8 rounded-full transition-colors ${editor.isActive('italic') ? 'bg-zinc-800 text-zinc-50' : 'text-zinc-400 hover:text-zinc-100'}`}
+            <button
+              type="button"
+              className={`h-8 w-8 rounded-full transition-colors flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none ${editor.isActive('italic') ? 'bg-zinc-800 text-zinc-50' : 'text-zinc-400 hover:text-zinc-100'}`}
               onClick={() => editor.chain().focus().toggleItalic().run()}
             >
               <Italic className="h-4 w-4" />
-            </Button>
+            </button>
           </TooltipTrigger>
           <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Italic</p></TooltipContent>
         </Tooltip>
@@ -100,15 +98,14 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
         {/* Undo */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 disabled:opacity-30"
+            <button
+              type="button"
+              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 disabled:opacity-30 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none disabled:pointer-events-none"
               onClick={() => editor.chain().focus().undo().run()}
               disabled={!editor.can().undo()}
             >
               <Undo className="h-4 w-4" />
-            </Button>
+            </button>
           </TooltipTrigger>
           <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Undo</p></TooltipContent>
         </Tooltip>
@@ -116,15 +113,14 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
         {/* Redo */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 disabled:opacity-30"
+            <button
+              type="button"
+              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 disabled:opacity-30 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none disabled:pointer-events-none"
               onClick={() => editor.chain().focus().redo().run()}
               disabled={!editor.can().redo()}
             >
               <Redo className="h-4 w-4" />
-            </Button>
+            </button>
           </TooltipTrigger>
           <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Redo</p></TooltipContent>
         </Tooltip>
@@ -135,14 +131,13 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
         <div className="flex items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100"
+              <button
+                type="button"
+                className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
                 onClick={() => setFontSize(prev => Math.max(12, prev - 1))}
               >
                 <Minus className="h-4 w-4" />
-              </Button>
+              </button>
             </TooltipTrigger>
             <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Decrease Font Size</p></TooltipContent>
           </Tooltip>
@@ -153,14 +148,13 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100"
+              <button
+                type="button"
+                className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
                 onClick={() => setFontSize(prev => Math.min(24, prev + 1))}
               >
                 <Plus className="h-4 w-4" />
-              </Button>
+              </button>
             </TooltipTrigger>
             <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Increase Font Size</p></TooltipContent>
           </Tooltip>
@@ -174,9 +168,12 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
             <div className="inline-block">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 rounded-full gap-1 text-zinc-300 hover:text-zinc-100 font-normal px-4 hover:bg-zinc-800">
+                  <button
+                    type="button"
+                    className="h-8 rounded-full gap-1 text-zinc-300 hover:text-zinc-100 font-normal px-4 hover:bg-zinc-800 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
+                  >
                     Format <ChevronDown className="h-3 w-3 opacity-50" />
-                  </Button>
+                  </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 bg-[#18181b] border-zinc-800/60 shadow-xl text-zinc-300 rounded-xl p-1" align="end" sideOffset={12}>
                   
@@ -209,7 +206,7 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
                   </DropdownMenuGroup>
                   
                   <DropdownMenuSeparator className="bg-zinc-800/60 mx-1" />
-
+ 
                   <DropdownMenuGroup>
                     <DropdownMenuLabel className="text-zinc-500 font-medium text-xs px-2 py-1.5">Insert</DropdownMenuLabel>
                     <DropdownMenuItem className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50" onClick={() => editor.chain().focus().toggleBlockquote().run()}>
@@ -222,7 +219,7 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
                       <SquareSlash /> Divider
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
-
+ 
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -235,14 +232,13 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
         {/* Create Button */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 transition-colors"
+            <button
+              type="button"
+              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 transition-colors flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
               onClick={onNewPost}
             >
               <Plus className="h-4 w-4" />
-            </Button>
+            </button>
           </TooltipTrigger>
           <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Start a new post</p></TooltipContent>
         </Tooltip>
@@ -252,10 +248,9 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
         {/* Copy Markdown */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 transition-colors"
+            <button
+              type="button"
+              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 transition-colors flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
               onClick={() => {
                 // @ts-ignore
                 const md = editor.storage.markdown.getMarkdown();
@@ -263,7 +258,7 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
               }}
             >
               <Copy className="h-4 w-4" />
-            </Button>
+            </button>
           </TooltipTrigger>
           <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Copy Markdown</p></TooltipContent>
         </Tooltip>
@@ -275,14 +270,13 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
           <>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 rounded-full text-red-400 hover:text-red-300 hover:bg-red-950/20 transition-colors"
+                <button
+                  type="button"
+                  className="h-8 w-8 rounded-full text-red-400 hover:text-red-300 hover:bg-red-950/20 transition-colors flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
                   onClick={onDeletePost}
                 >
                   <Trash2 className="h-4 w-4" />
-                </Button>
+                </button>
               </TooltipTrigger>
               <TooltipContent className="bg-zinc-900 text-red-200 border-zinc-800"><p>Delete Post</p></TooltipContent>
             </Tooltip>
@@ -293,14 +287,13 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
         {/* Theme Toggle */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100"
+            <button
+              type="button"
+              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
               onClick={toggleTheme}
             >
               {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
+            </button>
           </TooltipTrigger>
           <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Toggle Theme</p></TooltipContent>
         </Tooltip>

@@ -82,6 +82,33 @@ export function AuthCard({ neonAuthUrl }: { neonAuthUrl?: string }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const syncGuestPostsBeforeRedirect = async () => {
+    try {
+      const guestPostsRaw = localStorage.getItem("smooth_guest_posts");
+      if (guestPostsRaw) {
+        const posts = JSON.parse(guestPostsRaw);
+        if (Array.isArray(posts) && posts.length > 0) {
+          const response = await fetch("/api/posts/sync-local", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ posts })
+          });
+          if (response.ok) {
+            localStorage.removeItem("smooth_guest_posts");
+            // Clean up guest drafts
+            const guestDraftId = localStorage.getItem("smooth_draft_id_guest");
+            if (guestDraftId) {
+              localStorage.removeItem(`smooth_draft_content_guest`);
+              localStorage.removeItem("smooth_draft_id_guest");
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to sync guest posts:", e);
+    }
+  };
+
   const syncSocialSession = async (user: { id: string; email: string }) => {
     const syncResponse = await fetch("/api/auth/login-social", {
       method: "POST",
@@ -98,6 +125,7 @@ export function AuthCard({ neonAuthUrl }: { neonAuthUrl?: string }) {
       throw new Error(syncData.error || "Failed to sync social login session.");
     }
 
+    await syncGuestPostsBeforeRedirect();
     window.location.href = "/";
   };
 
@@ -198,6 +226,7 @@ export function AuthCard({ neonAuthUrl }: { neonAuthUrl?: string }) {
         throw new Error(data.error || "Something went wrong");
       }
 
+      await syncGuestPostsBeforeRedirect();
       window.location.href = "/";
     } catch (err: any) {
       setError(err.message || "Authentication failed");

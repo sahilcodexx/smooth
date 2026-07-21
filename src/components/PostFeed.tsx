@@ -68,8 +68,26 @@ export function PostFeed({
 
     applySettings(savedFont, parseInt(savedSize), parseInt(savedWidth));
 
-    // User is provided by SSR for a snappy first render
-  }, []);
+    if (!user) {
+      const guestPostsRaw = localStorage.getItem("smooth_guest_posts") || "[]";
+      try {
+        let guestPosts = JSON.parse(guestPostsRaw);
+        
+        // Filter out posts that haven't been active in 30 days
+        const now = Date.now();
+        const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+        guestPosts = guestPosts.filter((p: any) => {
+          const lastActive = p.last_active_at ? new Date(p.last_active_at).getTime() : new Date(p.created_at || now).getTime();
+          return now - lastActive < thirtyDaysMs;
+        });
+        
+        localStorage.setItem("smooth_guest_posts", JSON.stringify(guestPosts));
+        setPosts(guestPosts);
+      } catch (e) {
+        console.error("Error parsing guest posts:", e);
+      }
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -162,6 +180,22 @@ export function PostFeed({
     )
       return;
 
+    if (!user) {
+      try {
+        const guestPostsRaw = localStorage.getItem("smooth_guest_posts") || "[]";
+        const guestPosts = JSON.parse(guestPostsRaw);
+        const updated = guestPosts.filter((p: any) => !selectedIds.has(p.id));
+        localStorage.setItem("smooth_guest_posts", JSON.stringify(updated));
+        setPosts(updated);
+        setSelectedIds(new Set());
+        setIsDeleteMode(false);
+      } catch (e) {
+        console.error(e);
+        alert("Error deleting guest posts");
+      }
+      return;
+    }
+
     try {
       const idsArray = Array.from(selectedIds);
       const response = await fetch("/api/posts", {
@@ -206,6 +240,9 @@ export function PostFeed({
     if (isDeleteMode) {
       e.preventDefault();
       toggleSelect(postId);
+    } else if (!user) {
+      e.preventDefault();
+      window.location.href = `/create?id=${postId}`;
     }
   };
 

@@ -1,39 +1,69 @@
 ## Project Summary
 
-This project is an Astro-based web application that renders a long-form article ("A Morning at the Letterpress Museum"). The primary focus has been on establishing a premium, highly readable typographic design system using `shadcn/typeset` without relying on Tailwind CSS. The design features an editorial dark mode theme, optimal line lengths (measure), customized vertical rhythm (leading), and a minimal scrollbar.
+This project is an Astro-based web application that renders a long-form article ("A Morning at the Letterpress Museum") and manages a feed of user-created posts. The focus is on establishing a premium, highly readable typographic design system using `shadcn/typeset` without relying on Tailwind CSS. The design features an editorial dark mode theme, optimal line lengths (measure), customized vertical rhythm (leading), and a minimal scrollbar.
+
+The application uses **Neon Serverless Postgres** for data storage and **Neon Auth (Managed Better Auth)** for user authentication.
+
+## Current Architecture & Key Components
+
+*   **Database & Core Auth**: [src/lib/auth.ts](file:///home/sahilcodex/Documents/smooth/src/lib/auth.ts) houses database initializers, password hashing, and server-side session checks (`getSessionUser`). It dynamically bridges both custom first-party cookie sessions and Neon Auth (Better Auth) sessions.
+*   **Astro Server-Side Rendering**: Configured in Vercel SSR server mode (`output: 'server'` in `astro.config.mjs`) to handle live SSR route rendering, dynamic middleware, and API handlers.
+*   **Managed OAuth Sync**: Standard cross-origin cookie limitations (where Vercel cannot read cookies set on the Neon Auth domain) are bypassed using a hybrid client-server session bridging pattern implemented in [src/components/AuthCard.tsx](file:///home/sahilcodex/Documents/smooth/src/components/AuthCard.tsx) and the social sync endpoint [src/pages/api/auth/login-social.ts](file:///home/sahilcodex/Documents/smooth/src/pages/api/auth/login-social.ts).
+*   **Design System & UI**: Styles are managed through standard native CSS variables and utility fallbacks inside `src/styles/globals.css`. Navigation uses a floating Radix UI + Framer Motion dock toolbar defined in [src/components/HomeToolbar.tsx](file:///home/sahilcodex/Documents/smooth/src/components/HomeToolbar.tsx) and [src/components/PostFeed.tsx](file:///home/sahilcodex/Documents/smooth/src/components/PostFeed.tsx).
+*   **Local-First Guest Drafting**: Anonymous writers can view, write, and delete local draft posts saved entirely inside browser `localStorage`.
+    - Guest writing is limited to a maximum of **10 posts** to encourage user sign-in.
+    - Local guest drafts are stamped with a `last_active_at` timestamp. Any draft that hasn't been active/edited for 30 days is automatically pruned from local storage on site mount.
+    - When a guest decides to log in or register, [AuthCard.tsx](file:///home/sahilcodex/Documents/smooth/src/components/AuthCard.tsx) automatically reads the guest posts and sends them to `/api/posts/sync-local` to sync them securely to the database before completing the login flow.
+
+---
 
 ## Completed Work (Changelog)
 
-- **Shadcn Typeset Integration**: Downloaded `typeset.css` and integrated it into the project's CSS pipeline.
-- **Typography**: Installed and configured the `Geist Variable` and `Geist Mono Variable` fonts.
-- **Astro Build Fix**: Changed the stylesheet inclusion in `src/layouts/Layout.astro` from a static HTML `<link>` tag to an Astro frontmatter import (`import '../styles/globals.css';`) to ensure Vite correctly bundles the CSS and resolves `@import` statements.
-- **Layer Compatibility**: Stripped the `@layer components` wrappers from `typeset.css` to allow the styles to apply natively in the browser without requiring a Tailwind CSS compilation step.
-- **Editorial Dark Theme**: Defined global CSS variables in `src/styles/globals.css` to apply a rich dark theme (zinc-950 background, zinc-50 text) to the `html` and `body`.
-- **Utility Fallbacks**: Added native CSS fallbacks in `globals.css` for specific Tailwind utility classes used in the markup (`.max-w-[37em]`, `.grayscale`, `.dark\:brightness-50`) to enforce an optimal reading measure (~80 characters per line) and style images.
-- **Layout Spacing**: Increased the vertical margin (`6rem`) and padding on the main article container in `src/pages/index.astro` to provide more breathing room.
-- **Scrollbar Styling**: Added minimal, custom scrollbar CSS rules for WebKit (Chrome/Safari) and Firefox to seamlessly blend with the dark theme.
+### 1. Typography & Styling Foundation
+*   **Shadcn Typeset & Layer Stripping**: Integrated `typeset.css` natively in the global pipeline and stripped Tailwind `@layer` keywords so it processes without standard Tailwind builds.
+*   **Custom Dark Theme**: Set zinc-950/zinc-50 colors and added CSS scrollbar overrides to Firefox/WebKit to blend seamlessly.
+*   **Layout rhythm**: Enforced optimal ~80 character measure restrictions via native CSS variables.
+
+### 2. Neon Auth & Google OAuth Production Integration
+*   **Production Domains & Redirects**: Authorized `https://unmindful.vercel.app` redirect domains under Neon Auth's domain allowlist. Registered Google Console redirect URIs pointing back to Neon (`{NEON_AUTH_BASE_URL}/callback/google`).
+*   **Custom Credentials Integration**: Configured dedicated client credentials in Google Cloud Platform and Neon Console, moving away from shared developer tokens.
+*   **OAuth Callback Verification & Sync**: Integrated a verification routine in [AuthCard.tsx](file:///home/sahilcodex/Documents/smooth/src/components/AuthCard.tsx) that checks for the `neon_auth_session_verifier` parameter, queries `/get-session` on Neon Auth, and synchronizes the session payload to the backend via `/api/auth/login-social`.
+*   **Social Login Endpoint**: Created `/api/auth/login-social` to register first-time OAuth users into the local `users` database table and issue a first-party, secure, HttpOnly `session_token` cookie.
+
+### 3. DOM & Hydration Mismatch Fixes
+*   **Interactive Tooltips**: Resolved invalid HTML console errors (`<button> cannot contain a nested <button>`) and React hydration mismatches on the nav docks.
+*   **Trigger Refactoring**: Refactored trigger hierarchies to merge Radix triggers onto a single native `<button>` element inside `<TooltipTrigger>` and `<DropdownMenuTrigger>` tags.
+
+### 4. Local-First Guest Writing & Auto-Migration
+*   **Anonymous Access**: Refactored [index.astro](file:///home/sahilcodex/Documents/smooth/src/pages/index.astro) and [create.astro](file:///home/sahilcodex/Documents/smooth/src/pages/create.astro) to allow guest viewing and editing, passing `'guest'` as `userId` when unauthenticated.
+*   **Local Draft Support**: Extended [Editor.tsx](file:///home/sahilcodex/Documents/smooth/src/components/Editor.tsx) to read, save, and delete draft posts under `smooth_guest_posts` in `localStorage` when in guest mode.
+*   **Guest Writing Limit**: Enforced a hard limit of 10 guest posts in the editor, showing a premium sign-in promotional banner when reached.
+*   **Draft Expiration & Purging**: Integrated a cleanup sweep in [PostFeed.tsx](file:///home/sahilcodex/Documents/smooth/src/components/PostFeed.tsx) to delete guest posts that haven't been edited or active for more than 30 days.
+*   **Synchronization Endpoint**: Created [/api/posts/sync-local.ts](file:///home/sahilcodex/Documents/smooth/src/pages/api/posts/sync-local.ts) to batch upsert guest posts into the Neon database.
+*   **On-Login Migration Handler**: Hooked up a pre-redirect synchronization routine in [AuthCard.tsx](file:///home/sahilcodex/Documents/smooth/src/components/AuthCard.tsx) that automatically migrates local guest posts to the cloud and purges the guest local storage when the user logs in.
 
 ---
 
 ## Development
 
-When starting the dev server, use background mode:
+To boot the Astro development server in background mode:
 
-```
+```bash
 astro dev --background
 ```
 
-Manage the background server with `astro dev stop`, `astro dev status`, and `astro dev logs`.
+Manage the server lifecycle using:
+*   `astro dev status` - check background status
+*   `astro dev logs` - view active server terminal output
+*   `astro dev stop` - terminate background process
+
+For validation, build the production code locally with:
+
+```bash
+npm run build
+```
 
 ## Documentation
 
-Full documentation: https://docs.astro.build
-
-Consult these guides before working on related tasks:
-
-- [Adding pages, dynamic routes, or middleware](https://docs.astro.build/en/guides/routing/)
-- [Working with Astro components](https://docs.astro.build/en/basics/astro-components/)
-- [Using React, Vue, Svelte, or other framework components](https://docs.astro.build/en/guides/framework-components/)
-- [Adding or managing content](https://docs.astro.build/en/guides/content-collections/)
-- [Adding styles or using Tailwind](https://docs.astro.build/en/guides/styling/)
-- [Supporting multiple languages](https://docs.astro.build/en/guides/internationalization/)
+*   [Astro Documentation](https://docs.astro.build)
+*   [Neon Managed Auth Documentation](https://neon.com/docs/auth/introduction)
