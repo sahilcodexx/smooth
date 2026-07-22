@@ -60,7 +60,16 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
   const [expanded, setExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const [activeTab, setActiveTab] = useState<'posts' | 'time'>('posts');
+  const [direction, setDirection] = useState(1);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const islandRef = useRef<HTMLDivElement>(null);
+  const lastScrollRef = useRef<number>(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (initialPosts === null) {
@@ -99,13 +108,13 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
   const EXP_H = 330;
 
   const filteredPosts = posts.filter(p => 
-    p.title?.toLowerCase().includes(searchQuery.toLowerCase())
+    (p.title || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const baseHeight = 125; // top spacer, search bar, and padding
-  const listHeight = filteredPosts.length > 0 
-    ? Math.min(3, filteredPosts.length) * 54 
-    : 100; // height for empty state with button
+  const listHeight = activeTab === 'time'
+    ? 100
+    : (filteredPosts.length > 0 ? Math.min(3, filteredPosts.length) * 54 : 100);
   const targetHeight = expanded ? baseHeight + listHeight : BEZEL_H + NOTCH_H;
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
@@ -165,7 +174,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
           <motion.div
             onMouseEnter={() => !expanded && setExpanded(true)}
             onMouseLeave={() => expanded && !isFocused && setExpanded(false)}
-            onClick={() => !expanded && setExpanded(true)}
+            onClick={() => setExpanded(!expanded)}
             className="w-full h-full text-white overflow-hidden flex flex-col items-center justify-start relative pointer-events-auto border border-t-0 border-transparent dark:border-zinc-800/80 shadow-none dark:shadow-[0_8px_30px_rgba(0,0,0,0.85)]"
             style={{ backgroundColor: "var(--dynamic-island-bg)", cursor: expanded ? 'default' : 'pointer' }}
             animate={{
@@ -176,30 +185,109 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
 
             {/* === Collapsed State === */}
             <motion.div 
-              className="absolute inset-x-0 bottom-0 top-[6px] flex items-center justify-between px-3.5 z-10"
+              className="absolute inset-x-0 bottom-0 top-[6px] flex items-center justify-center z-10"
               animate={{ opacity: expanded ? 0 : 1 }}
               transition={{ duration: 0.12 }}
             >
-              <div className="w-[19px] h-[19px] rounded-full overflow-hidden flex-shrink-0 ring-1 ring-zinc-500/20 dark:ring-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,0.1)]">
-                <img src="https://pbs.twimg.com/profile_images/2078590852268732416/iAHBhHRM_400x400.jpg" alt="" className="w-full h-full object-cover" />
-              </div>
-              <div className="flex items-center gap-1.5 flex-shrink-0">
-                <img src="https://eshop.macsales.com/blog/wp-content/uploads/2020/12/Notes-Icon-Big-Sur.png" alt="" className="w-[19px] h-[19px] object-contain flex-shrink-0 [filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.2))] dark:[filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.3))]" />
-                {posts.length > 0 && <span className="text-[10px] font-bold text-[#FF9500]">{posts.length}</span>}
-              </div>
+              <AnimatePresence mode="wait">
+                {activeTab === 'time' && !expanded ? (
+                  <motion.div
+                    key="time"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center text-[#FF9500] font-medium text-[13px] tracking-wide"
+                  >
+                    {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="icons"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.15 }}
+                    className="flex items-center justify-between px-3.5 w-full h-full"
+                  >
+                    <div className="w-[19px] h-[19px] rounded-full overflow-hidden flex-shrink-0 ring-1 ring-zinc-500/20 dark:ring-zinc-800/50 shadow-[0_1px_3px_rgba(0,0,0,0.1)]">
+                      <img src="https://pbs.twimg.com/profile_images/2078590852268732416/iAHBhHRM_400x400.jpg" alt="" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <img src="https://eshop.macsales.com/blog/wp-content/uploads/2020/12/Notes-Icon-Big-Sur.png" alt="" className="w-[19px] h-[19px] object-contain flex-shrink-0 [filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.2))] dark:[filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.3))]" />
+                      {posts.length > 0 && <span className="text-[10px] font-bold text-[#FF9500]">{posts.length}</span>}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </motion.div>
 
             {/* === Expanded State === */}
             <AnimatePresence>
               {expanded && (
                 <motion.div 
-                  className="absolute inset-0 pt-7 px-5 pb-6 flex flex-col w-full h-full z-10"
-                  onClick={(e) => { if (e.target === e.currentTarget) setExpanded(false); }}
+                  className="absolute inset-0 flex flex-col w-full h-full z-10"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.08 }}
                 >
+                  {/* Top Drag/Scroll Area (The "Red Area") */}
+                  <motion.div 
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    onDragEnd={(e, info) => {
+                      if (info.offset.x > 30) {
+                        setDirection(-1);
+                        setActiveTab('posts');
+                      } else if (info.offset.x < -30) {
+                        setDirection(1);
+                        setActiveTab('time');
+                      }
+                    }}
+                    onWheel={(e) => {
+                      const now = Date.now();
+                      if (now - lastScrollRef.current < 400) return;
+                      const tabs = ['posts', 'time'] as const;
+                      
+                      if (e.deltaY > 10 || e.deltaX > 20) {
+                        setDirection(1);
+                        setActiveTab(prev => {
+                          const idx = tabs.indexOf(prev);
+                          return tabs[(idx + 1) % tabs.length];
+                        });
+                        lastScrollRef.current = now;
+                      } else if (e.deltaY < -10 || e.deltaX < -20) {
+                        setDirection(-1);
+                        setActiveTab(prev => {
+                          const idx = tabs.indexOf(prev);
+                          return tabs[(idx - 1 + tabs.length) % tabs.length];
+                        });
+                        lastScrollRef.current = now;
+                      }
+                    }}
+                    className="w-full h-8 shrink-0 flex items-center justify-center pt-2"
+                  >
+                  </motion.div>
+                  
+                  {/* Content Area (The "Blue Area") */}
+                  <div className="flex-1 w-full px-5 pb-6 overflow-hidden relative">
+                    <AnimatePresence mode="wait" custom={direction}>
+                      {activeTab === 'posts' ? (
+                        <motion.div 
+                          key="posts"
+                          custom={direction}
+                          variants={{
+                            enter: (dir: number) => ({ x: dir > 0 ? 20 : -20, opacity: 0 }),
+                            center: { x: 0, opacity: 1 },
+                            exit: (dir: number) => ({ x: dir < 0 ? 20 : -20, opacity: 0 })
+                          }}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col h-full w-full absolute inset-0 px-5 pb-6"
+                        >
                   {/* Top row: Header */}
                   <div className="flex justify-between items-center mb-3 pr-0.5">
                     <span className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">Recent Posts</span>
@@ -239,7 +327,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                   </div>
 
                   {/* Search Bar */}
-                  <div className="mt-2.5 flex items-center gap-2">
+                  <div className="mt-2.5 flex items-center gap-2 shrink-0">
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
                       <input 
@@ -265,6 +353,32 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                     >
                       <X className="w-3.5 h-3.5 text-zinc-400" />
                     </button>
+                  </div>
+                        </motion.div>
+                      ) : (
+                        <motion.div 
+                          key="time"
+                          custom={direction}
+                          variants={{
+                            enter: (dir: number) => ({ x: dir > 0 ? 20 : -20, opacity: 0 }),
+                            center: { x: 0, opacity: 1 },
+                            exit: (dir: number) => ({ x: dir < 0 ? 20 : -20, opacity: 0 })
+                          }}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col items-center justify-center h-full w-full absolute inset-0 px-5 pb-6"
+                        >
+                          <span className="text-5xl font-light text-white tracking-widest tabular-nums">
+                            {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <span className="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase mt-3">
+                            {currentTime.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
+                          </span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </motion.div>
               )}
