@@ -1,67 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, MoreHorizontal, X, Search, Trash2 } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, X, Search, Trash2, FileText, Plus } from 'lucide-react';
 
-const initialNotifications = [
-  {
-    id: 1,
-    initials: 'P',
-    color: '#34C759',
-    name: 'Priya',
-    message: 'Lunch tomorrow? That new ramen place near the office',
-    time: 'now',
-  },
-  {
-    id: 2,
-    initials: 'AM',
-    color: '#AF52DE',
-    name: 'Arjun Mehta',
-    message: 'Sent the deck: take a look before the sync',
-    time: '4m',
-  },
-  {
-    id: 3,
-    initials: 'MC',
-    color: '#007AFF',
-    name: 'Maya Chen',
-    message: "Can you review the PR when you're free?",
-    time: '12m',
-  },
-  {
-    id: 4,
-    initials: 'RK',
-    color: '#FF9500',
-    name: 'Ravi Kumar',
-    message: 'Deployed v2.3 to staging, looks good so far',
-    time: '18m',
-  },
-  {
-    id: 5,
-    initials: 'SS',
-    color: '#FF2D55',
-    name: 'Sara Singh',
-    message: 'The figma file has been updated with the new flows',
-    time: '25m',
-  },
-  {
-    id: 6,
-    initials: 'DG',
-    color: '#5856D6',
-    name: 'Dev Gupta',
-    message: 'Can we push the standup to 11:30 today?',
-    time: '32m',
-  },
-  {
-    id: 7,
-    initials: 'NK',
-    color: '#30B0C7',
-    name: 'Neha Kapoor',
-    message: 'Merged the auth PR, ready for review on prod',
-    time: '45m',
-  },
-];
+export interface Post {
+  id: string;
+  title: string;
+  created_at: string;
+}
 
-function SwipeableNotification({ n, onDelete }: { n: any; onDelete: () => void }) {
+const formatDate = (dateString: string | undefined) => {
+  if (!dateString) return "Draft";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+};
+
+function SwipeablePost({ p, onDelete }: { p: Post; onDelete: (e: React.MouseEvent) => void }) {
   return (
     <motion.div 
       layout
@@ -71,7 +24,6 @@ function SwipeableNotification({ n, onDelete }: { n: any; onDelete: () => void }
       transition={{ duration: 0.2 }}
       className="relative w-full"
     >
-      {/* Background delete button */}
       <div className="absolute right-0 top-0 bottom-0 w-[60px] flex items-center justify-center bg-red-500 rounded-lg">
         <button 
           onClick={onDelete} 
@@ -85,39 +37,44 @@ function SwipeableNotification({ n, onDelete }: { n: any; onDelete: () => void }
         drag="x"
         dragConstraints={{ left: -60, right: 0 }}
         dragElastic={0.1}
-        className="flex gap-3 items-start py-2.5 px-0.5 relative z-10 w-full cursor-grab active:cursor-grabbing"
+        className="flex gap-3 items-center py-2.5 px-2 relative z-10 w-full cursor-pointer active:cursor-grabbing rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
         style={{ backgroundColor: "var(--dynamic-island-bg)" }}
+        onClick={() => { window.location.href = `/posts/${p.id}`; }}
       >
-        <div 
-          className="w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-[11px] relative shrink-0 text-white"
-          style={{ backgroundColor: n.color }}
-        >
-          {n.initials}
-          <div 
-            className="absolute -bottom-[1px] -right-[1px] w-[12px] h-[12px] rounded-full border-[2px] border-black flex items-center justify-center"
-            style={{ backgroundColor: n.color }}
-          >
-            <MessageCircle className="w-[6px] h-[6px] text-white fill-white" />
-          </div>
+        <div className="w-[32px] h-[32px] rounded-full bg-zinc-800 dark:bg-zinc-200 flex items-center justify-center text-zinc-300 dark:bg-zinc-700 shrink-0">
+          <FileText className="w-4 h-4" />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-2 text-left">
           <div className="flex justify-between items-baseline mb-0.5">
-            <h4 className="font-semibold text-[13px] text-white leading-none">{n.name}</h4>
-            <span className="text-[10px] text-zinc-500 ml-2 shrink-0">{n.time}</span>
+            <h4 className="font-semibold text-[13px] text-white leading-none truncate max-w-[180px]">{p.title || "Untitled Thought"}</h4>
+            <span className="text-[10px] text-zinc-500 shrink-0 ml-2">{formatDate(p.created_at)}</span>
           </div>
-          <p className="text-[11.5px] text-zinc-400 leading-snug">{n.message}</p>
         </div>
       </motion.div>
     </motion.div>
   );
 }
 
-export function DynamicIsland() {
-  const [notifs, setNotifs] = useState(initialNotifications);
+export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] | null }) {
+  const [posts, setPosts] = useState<Post[]>(initialPosts || []);
   const [expanded, setExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const islandRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (initialPosts === null) {
+      const guestPostsRaw = localStorage.getItem("smooth_guest_posts") || "[]";
+      try {
+        const guestPosts = JSON.parse(guestPostsRaw);
+        setPosts(guestPosts);
+      } catch (e) {
+        console.error("Error parsing guest posts:", e);
+      }
+    } else {
+      setPosts(initialPosts);
+    }
+  }, [initialPosts]);
 
   useEffect(() => {
     if (!expanded) return;
@@ -141,16 +98,24 @@ export function DynamicIsland() {
   const EXP_W = 380;
   const EXP_H = 330;
 
-  const filteredNotifications = notifs.filter(n => 
-    n.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    n.message.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredPosts = posts.filter(p => 
+    p.title?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const baseHeight = 125; // top spacer, search bar, and padding
-  const notificationHeight = filteredNotifications.length > 0 
-    ? Math.min(3, filteredNotifications.length) * 62 
-    : 80; // height for empty state
-  const targetHeight = expanded ? baseHeight + notificationHeight : BEZEL_H + NOTCH_H;
+  const listHeight = filteredPosts.length > 0 
+    ? Math.min(3, filteredPosts.length) * 54 
+    : 100; // height for empty state with button
+  const targetHeight = expanded ? baseHeight + listHeight : BEZEL_H + NOTCH_H;
+
+  const handleDelete = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const updated = posts.filter(item => item.id !== id);
+    setPosts(updated);
+    if (initialPosts === null) {
+      localStorage.setItem("smooth_guest_posts", JSON.stringify(updated));
+    }
+  };
 
   return (
     <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
@@ -220,7 +185,7 @@ export function DynamicIsland() {
               </div>
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <img src="https://eshop.macsales.com/blog/wp-content/uploads/2020/12/Notes-Icon-Big-Sur.png" alt="" className="w-[19px] h-[19px] object-contain flex-shrink-0 [filter:drop-shadow(0_1px_2px_rgba(0,0,0,0.2))] dark:[filter:drop-shadow(0_1px_3px_rgba(0,0,0,0.3))]" />
-                <span className="text-[10px] font-bold text-[#FF9500]">2</span>
+                {posts.length > 0 && <span className="text-[10px] font-bold text-[#FF9500]">{posts.length}</span>}
               </div>
             </motion.div>
 
@@ -235,31 +200,39 @@ export function DynamicIsland() {
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.2, delay: 0.08 }}
                 >
-                  {/* Top row: three-dot menu */}
-                  <div className="flex justify-end items-center mb-2 pr-0.5">
+                  {/* Top row: Header */}
+                  <div className="flex justify-between items-center mb-3 pr-0.5">
+                    <span className="text-xs font-semibold text-zinc-400 tracking-wide uppercase">Recent Posts</span>
                     <button className="p-0.5 text-zinc-500 hover:text-zinc-300 transition-colors">
                       <MoreHorizontal className="w-4 h-4" />
                     </button>
                   </div>
                   
-                  {/* Notifications */}
+                  {/* Posts List */}
                   <div className="flex flex-col gap-0 flex-1 overflow-y-auto scrollbar-none scroll-mask py-1">
                     <AnimatePresence>
-                      {filteredNotifications.length > 0 ? (
-                        filteredNotifications.map((n) => (
-                          <SwipeableNotification 
-                            key={n.id} 
-                            n={n} 
-                            onDelete={() => setNotifs(prev => prev.filter(item => item.id !== n.id))} 
+                      {filteredPosts.length > 0 ? (
+                        filteredPosts.map((p) => (
+                          <SwipeablePost 
+                            key={p.id} 
+                            p={p} 
+                            onDelete={(e) => handleDelete(e, p.id)} 
                           />
                         ))
                       ) : (
                         <motion.div 
                           initial={{ opacity: 0 }} 
                           animate={{ opacity: 1 }} 
-                          className="flex flex-col items-center justify-center flex-1 text-zinc-500 text-[11.5px] py-8"
+                          className="flex flex-col items-center justify-center flex-1 text-zinc-500 text-[11.5px] py-4"
                         >
-                          No results found
+                          <p className="mb-3">No posts found.</p>
+                          <a 
+                            href="/create?new=true"
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-black font-semibold hover:bg-zinc-200 transition-colors"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            Create post
+                          </a>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -275,7 +248,7 @@ export function DynamicIsland() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
-                        placeholder="Search notifications..." 
+                        placeholder="Search posts..." 
                         className="w-full bg-[#1c1c1e] border border-[#333] rounded-full py-[7px] pl-9 pr-4 text-[11px] text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors" 
                       />
                     </div>

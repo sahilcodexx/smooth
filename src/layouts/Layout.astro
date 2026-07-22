@@ -2,6 +2,8 @@
 import '../styles/global.css';
 import '../styles/globals.css';
 import { DynamicIsland } from '../components/DynamicIsland';
+
+const { posts = null } = Astro.props;
 ---
 <!doctype html>
 <html lang="en" class="dark">
@@ -22,7 +24,7 @@ import { DynamicIsland } from '../components/DynamicIsland';
 		</script>
 	</head>
 	<body>
-		<DynamicIsland client:load />
+		<DynamicIsland client:load initialPosts={posts} />
 		<slot />
 	</body>
 </html>

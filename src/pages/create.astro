@@ -3,13 +3,30 @@ import Layout from '../layouts/Layout.astro';
 import Editor from '../components/Editor';
 import { getSessionUser } from '../lib/auth';
 
+import { neon } from '@neondatabase/serverless';
+
 export const prerender = false;
 
 // Authenticate session
 const user = await getSessionUser(Astro.request.headers.get('Cookie'));
+
+let posts = [];
+if (user) {
+  try {
+    const sql = neon(import.meta.env.DATABASE_URL);
+    posts = await sql`
+      SELECT id, title, created_at
+      FROM posts
+      WHERE user_id = ${user.id}
+      ORDER BY created_at DESC;
+    `;
+  } catch (err) {
+    console.error('Failed to fetch user posts:', err);
+  }
+}
 ---
 
-<Layout>
+<Layout posts={posts}>
   <main class="max-w-[37em]" style="margin: 0 auto; padding: 6rem 1.25rem; min-height: 100vh; box-sizing: border-box; display: flex; flex-direction: column;">
     <Editor client:only="react" userId={user?.id || 'guest'} />
   </main>
