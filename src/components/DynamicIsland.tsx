@@ -57,6 +57,7 @@ const notifications = [
 export function DynamicIsland() {
   const [expanded, setExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const islandRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -139,7 +140,7 @@ export function DynamicIsland() {
           {/* The actual notch body */}
           <motion.div
             onMouseEnter={() => !expanded && setExpanded(true)}
-            onMouseLeave={() => expanded && setExpanded(false)}
+            onMouseLeave={() => expanded && !isFocused && setExpanded(false)}
             onClick={() => !expanded && setExpanded(true)}
             className="w-full h-full text-white overflow-hidden flex flex-col items-center justify-start relative pointer-events-auto border border-t-0 border-transparent dark:border-zinc-800/80 shadow-none dark:shadow-[0_8px_30px_rgba(0,0,0,0.85)]"
             style={{ backgroundColor: "var(--dynamic-island-bg)", cursor: expanded ? 'default' : 'pointer' }}
@@ -223,6 +224,8 @@ export function DynamicIsland() {
                         type="text" 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
                         placeholder="Search notifications..." 
                         className="w-full bg-[#1c1c1e] border border-[#333] rounded-full py-[7px] pl-9 pr-4 text-[11px] text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500 transition-colors" 
                       />
