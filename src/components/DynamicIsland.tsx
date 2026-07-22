@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, MoreHorizontal, X, Search } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, X, Search, Trash2 } from 'lucide-react';
 
-const notifications = [
+const initialNotifications = [
   {
+    id: 1,
     initials: 'P',
     color: '#34C759',
     name: 'Priya',
@@ -11,6 +12,7 @@ const notifications = [
     time: 'now',
   },
   {
+    id: 2,
     initials: 'AM',
     color: '#AF52DE',
     name: 'Arjun Mehta',
@@ -18,6 +20,7 @@ const notifications = [
     time: '4m',
   },
   {
+    id: 3,
     initials: 'MC',
     color: '#007AFF',
     name: 'Maya Chen',
@@ -25,6 +28,7 @@ const notifications = [
     time: '12m',
   },
   {
+    id: 4,
     initials: 'RK',
     color: '#FF9500',
     name: 'Ravi Kumar',
@@ -32,6 +36,7 @@ const notifications = [
     time: '18m',
   },
   {
+    id: 5,
     initials: 'SS',
     color: '#FF2D55',
     name: 'Sara Singh',
@@ -39,6 +44,7 @@ const notifications = [
     time: '25m',
   },
   {
+    id: 6,
     initials: 'DG',
     color: '#5856D6',
     name: 'Dev Gupta',
@@ -46,6 +52,7 @@ const notifications = [
     time: '32m',
   },
   {
+    id: 7,
     initials: 'NK',
     color: '#30B0C7',
     name: 'Neha Kapoor',
@@ -54,7 +61,59 @@ const notifications = [
   },
 ];
 
+function SwipeableNotification({ n, onDelete }: { n: any; onDelete: () => void }) {
+  return (
+    <motion.div 
+      layout
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.2 }}
+      className="relative w-full"
+    >
+      {/* Background delete button */}
+      <div className="absolute right-0 top-0 bottom-0 w-[60px] flex items-center justify-center bg-red-500 rounded-lg">
+        <button 
+          onClick={onDelete} 
+          className="w-full h-full flex items-center justify-center text-white outline-none cursor-pointer"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: -60, right: 0 }}
+        dragElastic={0.1}
+        className="flex gap-3 items-start py-2.5 px-0.5 relative z-10 w-full cursor-grab active:cursor-grabbing"
+        style={{ backgroundColor: "var(--dynamic-island-bg)" }}
+      >
+        <div 
+          className="w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-[11px] relative shrink-0 text-white"
+          style={{ backgroundColor: n.color }}
+        >
+          {n.initials}
+          <div 
+            className="absolute -bottom-[1px] -right-[1px] w-[12px] h-[12px] rounded-full border-[2px] border-black flex items-center justify-center"
+            style={{ backgroundColor: n.color }}
+          >
+            <MessageCircle className="w-[6px] h-[6px] text-white fill-white" />
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-baseline mb-0.5">
+            <h4 className="font-semibold text-[13px] text-white leading-none">{n.name}</h4>
+            <span className="text-[10px] text-zinc-500 ml-2 shrink-0">{n.time}</span>
+          </div>
+          <p className="text-[11.5px] text-zinc-400 leading-snug">{n.message}</p>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export function DynamicIsland() {
+  const [notifs, setNotifs] = useState(initialNotifications);
   const [expanded, setExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
@@ -82,7 +141,7 @@ export function DynamicIsland() {
   const EXP_W = 380;
   const EXP_H = 330;
 
-  const filteredNotifications = notifications.filter(n => 
+  const filteredNotifications = notifs.filter(n => 
     n.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     n.message.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -185,35 +244,25 @@ export function DynamicIsland() {
                   
                   {/* Notifications */}
                   <div className="flex flex-col gap-0 flex-1 overflow-y-auto scrollbar-none scroll-mask py-1">
-                    {filteredNotifications.length > 0 ? (
-                      filteredNotifications.map((n, i) => (
-                        <div key={i} className="flex gap-3 items-start py-2.5 px-0.5">
-                          <div 
-                            className="w-[38px] h-[38px] rounded-full flex items-center justify-center font-bold text-[11px] relative shrink-0 text-white"
-                            style={{ backgroundColor: n.color }}
-                          >
-                            {n.initials}
-                            <div 
-                              className="absolute -bottom-[1px] -right-[1px] w-[12px] h-[12px] rounded-full border-[2px] border-black flex items-center justify-center"
-                              style={{ backgroundColor: n.color }}
-                            >
-                              <MessageCircle className="w-[6px] h-[6px] text-white fill-white" />
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-baseline mb-0.5">
-                              <h4 className="font-semibold text-[13px] text-white leading-none">{n.name}</h4>
-                              <span className="text-[10px] text-zinc-500 ml-2 shrink-0">{n.time}</span>
-                            </div>
-                            <p className="text-[11.5px] text-zinc-400 leading-snug">{n.message}</p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="flex flex-col items-center justify-center flex-1 text-zinc-500 text-[11.5px] py-8">
-                        No results found
-                      </div>
-                    )}
+                    <AnimatePresence>
+                      {filteredNotifications.length > 0 ? (
+                        filteredNotifications.map((n) => (
+                          <SwipeableNotification 
+                            key={n.id} 
+                            n={n} 
+                            onDelete={() => setNotifs(prev => prev.filter(item => item.id !== n.id))} 
+                          />
+                        ))
+                      ) : (
+                        <motion.div 
+                          initial={{ opacity: 0 }} 
+                          animate={{ opacity: 1 }} 
+                          className="flex flex-col items-center justify-center flex-1 text-zinc-500 text-[11.5px] py-8"
+                        >
+                          No results found
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   {/* Search Bar */}
