@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Search, FileText, Plus, Moon, Sun, ArrowRight } from 'lucide-react';
 import type { Post } from './DynamicIsland';
 

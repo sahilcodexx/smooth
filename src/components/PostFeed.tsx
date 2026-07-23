@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "motion/react";
 import {
   Plus,
   Sliders,
@@ -296,15 +296,20 @@ export function PostFeed({
                 </span>
               </p>
             ) : (
-              <p
-                style={{
-                  margin: "0.3rem 0 0 0",
-                  fontSize: "0.85rem",
-                  color: "var(--color-muted-foreground)",
-                }}
-              >
-                write your random thought
-              </p>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.3rem" }}>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "0.85rem",
+                    color: "var(--color-muted-foreground)",
+                  }}
+                >
+                  write your random thought
+                </p>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-medium tracking-wide">
+                  {posts.length}/10 free posts
+                </span>
+              </div>
             )}
           </div>
           <a

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { MessageCircle, MoreHorizontal, X, Search, Trash2, FileText, Plus, Cloud, Calendar as CalendarIcon, Play, Pause, Square, Timer } from 'lucide-react';
 import { Calendar } from './ui/calendar';
 import NumberFlow from '@number-flow/react';

@@ -3,12 +3,14 @@ import '../styles/global.css';
 import '../styles/globals.css';
 import { DynamicIsland } from '../components/DynamicIsland';
 import { CommandPalette } from '../components/CommandPalette';
+import { ClientRouter } from 'astro:transitions';
 
 const { posts = null } = Astro.props;
 ---
 <!doctype html>
 <html lang="en" class="dark">
 	<head>
+		<ClientRouter />
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -19,12 +21,16 @@ const { posts = null } = Astro.props;
 		<meta name="theme-color" content="#09090b" />
 		<link rel="apple-touch-icon" href="/pwa-192x192.png" />
 		<script is:inline>
-			const theme = localStorage.getItem('theme') || 'dark';
-			if (theme === 'light') {
-				document.documentElement.classList.remove('dark');
-			} else {
-				document.documentElement.classList.add('dark');
-			}
+			const applyTheme = () => {
+				const theme = localStorage.getItem('theme') || 'dark';
+				if (theme === 'light') {
+					document.documentElement.classList.remove('dark');
+				} else {
+					document.documentElement.classList.add('dark');
+				}
+			};
+			applyTheme();
+			document.addEventListener('astro:after-swap', applyTheme);
 		</script>
 	</head>
 	<body>
