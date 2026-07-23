@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, FileText, Plus, Moon, Sun, ArrowRight } from 'lucide-react';
 import type { Post } from './DynamicIsland';
 
-export function CommandPalette({ posts = [] }: { posts?: Post[] }) {
+export function CommandPalette({ posts }: { posts?: Post[] | null }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+
+  const safePosts = posts || [];
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -19,7 +21,7 @@ export function CommandPalette({ posts = [] }: { posts?: Post[] }) {
     return () => document.removeEventListener('keydown', down);
   }, []);
 
-  const filteredPosts = posts.filter(p => 
+  const filteredPosts = safePosts.filter(p => 
     (p.title || "").toLowerCase().includes(query.toLowerCase())
   );
 
@@ -38,7 +40,7 @@ export function CommandPalette({ posts = [] }: { posts?: Post[] }) {
           />
 
           {/* Modal */}
-          <div className="fixed inset-0 z-[101] flex items-start justify-center pt-[15vh] pointer-events-none">
+          <div className="fixed inset-0 z-[101] flex items-start justify-center pt-[15vh] px-4 pointer-events-none">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: -20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}

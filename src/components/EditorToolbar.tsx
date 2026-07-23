@@ -93,14 +93,14 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
           <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Italic</p></TooltipContent>
         </Tooltip>
 
-        <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
+        <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50 hidden sm:block" />
 
         {/* Undo */}
         <Tooltip>
           <TooltipTrigger asChild>
             <button
               type="button"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 disabled:opacity-30 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none disabled:pointer-events-none"
+              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 disabled:opacity-30 hidden sm:flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none disabled:pointer-events-none"
               onClick={() => editor.chain().focus().undo().run()}
               disabled={!editor.can().undo()}
             >
@@ -115,7 +115,7 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
           <TooltipTrigger asChild>
             <button
               type="button"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 disabled:opacity-30 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none disabled:pointer-events-none"
+              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 disabled:opacity-30 hidden sm:flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none disabled:pointer-events-none"
               onClick={() => editor.chain().focus().redo().run()}
               disabled={!editor.can().redo()}
             >
@@ -125,7 +125,7 @@ export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDele
           <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Redo</p></TooltipContent>
         </Tooltip>
 
-        <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
+        <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50 hidden sm:block" />
 
         {/* Font Size */}
         <div className="flex items-center gap-1">

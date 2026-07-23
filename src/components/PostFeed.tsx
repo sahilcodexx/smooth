@@ -290,9 +290,9 @@ export function PostFeed({
                   color: "var(--color-muted-foreground)",
                 }}
               >
-                logged in as{" "}
+                Welcome back,{" "}
                 <span className="font-mono text-zinc-300 font-semibold">
-                  {user.email}
+                  {user.email.split('@')[0]}
                 </span>
               </p>
             ) : (
@@ -318,6 +318,7 @@ export function PostFeed({
               fontSize: "0.85rem",
               fontWeight: 500,
               transition: "opacity 0.2s",
+              whiteSpace: "nowrap",
             }}
           >
             New post
