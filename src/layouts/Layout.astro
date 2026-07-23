@@ -14,7 +14,10 @@ const { posts = null } = Astro.props;
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>unmindful</title>
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<meta name="theme-color" content="#09090b" />
+		<link rel="apple-touch-icon" href="/pwa-192x192.png" />
 		<script is:inline>
 			const theme = localStorage.getItem('theme') || 'dark';
 			if (theme === 'light') {
