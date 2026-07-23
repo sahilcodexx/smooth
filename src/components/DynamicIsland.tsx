@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, MoreHorizontal, X, Search, Trash2, FileText, Plus, Cloud, Calendar as CalendarIcon, Play, Pause, Square, Timer } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, X, Search, Trash2, FileText, Plus, Cloud, Calendar as CalendarIcon, Play, Pause, Square, Timer, Music, Volume2, Headphones } from 'lucide-react';
 import { Calendar } from './ui/calendar';
 
 
@@ -85,12 +85,16 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
   const [expanded, setExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  const [activeTab, setActiveTab] = useState<'posts' | 'time' | 'quote' | 'timer'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'time' | 'quote' | 'timer' | 'music'>('posts');
   const [activeQuote, setActiveQuote] = useState(QUOTES[0]);
   
   // Timer State
   const [timerState, setTimerState] = useState<'idle' | 'running' | 'paused'>('idle');
   const [timeLeft, setTimeLeft] = useState(25 * 60);
+
+  // Music State
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const [direction, setDirection] = useState(1);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -153,7 +157,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
   const NOTCH_W = 180;
   const R = 16; // fillet radius
 
-  const EXP_W = activeTab === 'time' ? 440 : (activeTab === 'quote' ? 380 : (activeTab === 'timer' ? 340 : 380));
+  const EXP_W = activeTab === 'time' ? 440 : (activeTab === 'quote' ? 380 : (activeTab === 'timer' ? 340 : (activeTab === 'music' ? 340 : 380)));
   const EXP_H = 330;
 
   const filteredPosts = posts.filter(p => 
@@ -165,6 +169,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
     ? 220
     : activeTab === 'quote' ? 120
     : activeTab === 'timer' ? 160
+    : activeTab === 'music' ? 140
     : (filteredPosts.length > 0 ? Math.min(3, filteredPosts.length) * 54 : 100);
   const targetHeight = expanded ? baseHeight + listHeight : BEZEL_H + NOTCH_H;
 
@@ -248,12 +253,14 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.15 }}
-                    className={`flex items-center font-medium text-[13px] tracking-wide ${activeTab === 'timer' && timerState === 'running' ? 'text-[#34C759]' : 'text-[#FF9500]'}`}
+                    className={`flex items-center font-medium text-[13px] tracking-wide ${activeTab === 'timer' && timerState === 'running' ? 'text-[#34C759]' : isMusicPlaying && activeTab === 'music' ? 'text-[#0A84FF]' : 'text-[#FF9500]'}`}
                   >
                     {activeTab === 'time' 
                       ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                       : activeTab === 'timer' 
                       ? (timerState === 'running' || timerState === 'paused' ? `${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}` : "Focus Timer")
+                      : activeTab === 'music'
+                      ? (isMusicPlaying ? <span className="flex items-center gap-1.5"><Volume2 className="w-3.5 h-3.5" /> Playing Rain</span> : "Ambient Sounds")
                       : "Daily Quote"
                     }
                   </motion.div>
@@ -293,7 +300,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                     drag="x"
                     dragConstraints={{ left: 0, right: 0 }}
                     onDragEnd={(e, info) => {
-                      const tabs = ['posts', 'time', 'quote', 'timer'] as const;
+                      const tabs = ['posts', 'time', 'quote', 'timer', 'music'] as const;
                       if (info.offset.x > 30) {
                         setDirection(-1);
                         setActiveTab(prev => {
@@ -311,7 +318,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                     onWheel={(e) => {
                       const now = Date.now();
                       if (now - lastScrollRef.current < 400) return;
-                      const tabs = ['posts', 'time', 'quote', 'timer'] as const;
+                      const tabs = ['posts', 'time', 'quote', 'timer', 'music'] as const;
 
                       
                       if (e.deltaY > 10 || e.deltaX > 20) {
@@ -487,7 +494,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                             "{activeQuote}"
                           </p>
                         </motion.div>
-                      ) : (
+                      ) : activeTab === 'timer' ? (
                         <motion.div 
                           key="timer"
                           custom={direction}
@@ -542,6 +549,58 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                             </button>
                           </div>
                         </motion.div>
+                      ) : (
+                        <motion.div 
+                          key="music"
+                          custom={direction}
+                          variants={{
+                            enter: (dir: number) => ({ x: dir > 0 ? 20 : -20, opacity: 0 }),
+                            center: { x: 0, opacity: 1 },
+                            exit: (dir: number) => ({ x: dir < 0 ? 20 : -20, opacity: 0 })
+                          }}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col items-center justify-center h-full w-full absolute inset-0 px-8 py-4 text-center"
+                        >
+                          <span className="text-zinc-500 text-[11px] font-semibold tracking-wider uppercase flex items-center justify-center gap-1.5 mb-2">
+                            <Headphones className="w-3.5 h-3.5" /> Ambient Sounds
+                          </span>
+                          
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg mb-4 flex items-center justify-center relative overflow-hidden">
+                            <Music className="w-6 h-6 text-white opacity-90 z-10" />
+                            {isMusicPlaying && (
+                              <motion.div 
+                                className="absolute inset-0 bg-white/20"
+                                animate={{ scale: [1, 1.5, 1] }}
+                                transition={{ repeat: Infinity, duration: 1.5 }}
+                              />
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <button 
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                if (isMusicPlaying) {
+                                  audioRef.current?.pause();
+                                  setIsMusicPlaying(false);
+                                } else {
+                                  audioRef.current?.play();
+                                  setIsMusicPlaying(true);
+                                }
+                              }}
+                              className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform"
+                            >
+                              {isMusicPlaying ? (
+                                <Pause className="w-4 h-4 fill-current" />
+                              ) : (
+                                <Play className="w-4 h-4 fill-current ml-0.5" />
+                              )}
+                            </button>
+                          </div>
+                        </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
@@ -551,6 +610,9 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
           </motion.div>
         </motion.div>
       </div>
+
+      {/* Global Audio Element */}
+      <audio ref={audioRef} src="https://actions.google.com/sounds/v1/weather/rain_on_roof.ogg" loop />
     </div>
   );
 }

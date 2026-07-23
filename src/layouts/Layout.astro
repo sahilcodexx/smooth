@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import '../styles/globals.css';
 import { DynamicIsland } from '../components/DynamicIsland';
+import { CommandPalette } from '../components/CommandPalette';
 
 const { posts = null } = Astro.props;
 ---
@@ -25,6 +26,7 @@ const { posts = null } = Astro.props;
 	</head>
 	<body>
 		<DynamicIsland client:load initialPosts={posts} />
+		<CommandPalette client:load posts={posts} />
 		<slot />
 	</body>
 </html>
