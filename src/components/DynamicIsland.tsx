@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, MoreHorizontal, X, Search, Trash2, FileText, Plus, Cloud, Calendar as CalendarIcon } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, X, Search, Trash2, FileText, Plus, Cloud, Calendar as CalendarIcon, Play, Pause, Square, Timer } from 'lucide-react';
 import { Calendar } from './ui/calendar';
 
 
@@ -85,8 +85,13 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
   const [expanded, setExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  const [activeTab, setActiveTab] = useState<'posts' | 'time' | 'quote'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'time' | 'quote' | 'timer'>('posts');
   const [activeQuote, setActiveQuote] = useState(QUOTES[0]);
+  
+  // Timer State
+  const [timerState, setTimerState] = useState<'idle' | 'running' | 'paused'>('idle');
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
+
   const [direction, setDirection] = useState(1);
   const [currentTime, setCurrentTime] = useState(new Date());
   const islandRef = useRef<HTMLDivElement>(null);
@@ -96,6 +101,20 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (timerState !== 'running') return;
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          setTimerState('idle');
+          return 25 * 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timerState]);
 
   useEffect(() => {
     if (initialPosts === null) {
@@ -134,7 +153,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
   const NOTCH_W = 180;
   const R = 16; // fillet radius
 
-  const EXP_W = activeTab === 'time' ? 440 : (activeTab === 'quote' ? 380 : 380);
+  const EXP_W = activeTab === 'time' ? 440 : (activeTab === 'quote' ? 380 : (activeTab === 'timer' ? 340 : 380));
   const EXP_H = 330;
 
   const filteredPosts = posts.filter(p => 
@@ -145,6 +164,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
   const listHeight = activeTab === 'time'
     ? 220
     : activeTab === 'quote' ? 120
+    : activeTab === 'timer' ? 160
     : (filteredPosts.length > 0 ? Math.min(3, filteredPosts.length) * 54 : 100);
   const targetHeight = expanded ? baseHeight + listHeight : BEZEL_H + NOTCH_H;
 
@@ -228,10 +248,12 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.15 }}
-                    className="flex items-center text-[#FF9500] font-medium text-[13px] tracking-wide"
+                    className={`flex items-center font-medium text-[13px] tracking-wide ${activeTab === 'timer' && timerState === 'running' ? 'text-[#34C759]' : 'text-[#FF9500]'}`}
                   >
                     {activeTab === 'time' 
                       ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : activeTab === 'timer' 
+                      ? (timerState === 'running' || timerState === 'paused' ? `${Math.floor(timeLeft / 60).toString().padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}` : "Focus Timer")
                       : "Daily Quote"
                     }
                   </motion.div>
@@ -271,7 +293,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                     drag="x"
                     dragConstraints={{ left: 0, right: 0 }}
                     onDragEnd={(e, info) => {
-                      const tabs = ['posts', 'time', 'quote'] as const;
+                      const tabs = ['posts', 'time', 'quote', 'timer'] as const;
                       if (info.offset.x > 30) {
                         setDirection(-1);
                         setActiveTab(prev => {
@@ -289,7 +311,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                     onWheel={(e) => {
                       const now = Date.now();
                       if (now - lastScrollRef.current < 400) return;
-                      const tabs = ['posts', 'time', 'quote'] as const;
+                      const tabs = ['posts', 'time', 'quote', 'timer'] as const;
 
                       
                       if (e.deltaY > 10 || e.deltaX > 20) {
@@ -445,7 +467,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                              </div>
                           </div>
                         </motion.div>
-                      ) : (
+                      ) : activeTab === 'quote' ? (
                         <motion.div 
                           key="quote"
                           custom={direction}
@@ -464,6 +486,61 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                           <p className="text-[15px] font-medium leading-relaxed text-zinc-100 italic">
                             "{activeQuote}"
                           </p>
+                        </motion.div>
+                      ) : (
+                        <motion.div 
+                          key="timer"
+                          custom={direction}
+                          variants={{
+                            enter: (dir: number) => ({ x: dir > 0 ? 20 : -20, opacity: 0 }),
+                            center: { x: 0, opacity: 1 },
+                            exit: (dir: number) => ({ x: dir < 0 ? 20 : -20, opacity: 0 })
+                          }}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col items-center justify-center h-full w-full absolute inset-0 px-8 py-4 text-center"
+                        >
+                          <span className="text-zinc-500 text-[11px] font-semibold tracking-wider uppercase flex items-center justify-center gap-1.5">
+                            <Timer className="w-3.5 h-3.5" /> Focus Timer
+                          </span>
+                          
+                          <div className={`text-[56px] font-light tracking-widest tabular-nums leading-none my-3 ${timerState === 'running' ? 'text-[#34C759]' : 'text-white'}`}>
+                            {Math.floor(timeLeft / 60).toString().padStart(2, '0')}:{(timeLeft % 60).toString().padStart(2, '0')}
+                          </div>
+
+                          <div className="flex items-center gap-4 mt-2">
+                            {timerState === 'idle' ? (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); setTimerState('running'); }}
+                                className="w-10 h-10 rounded-full bg-[#34C759]/20 flex items-center justify-center hover:bg-[#34C759]/30 transition-colors"
+                              >
+                                <Play className="w-4 h-4 text-[#34C759] fill-current ml-0.5" />
+                              </button>
+                            ) : timerState === 'running' ? (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); setTimerState('paused'); }}
+                                className="w-10 h-10 rounded-full bg-[#FF9500]/20 flex items-center justify-center hover:bg-[#FF9500]/30 transition-colors"
+                              >
+                                <Pause className="w-4 h-4 text-[#FF9500] fill-current" />
+                              </button>
+                            ) : (
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); setTimerState('running'); }}
+                                className="w-10 h-10 rounded-full bg-[#34C759]/20 flex items-center justify-center hover:bg-[#34C759]/30 transition-colors"
+                              >
+                                <Play className="w-4 h-4 text-[#34C759] fill-current ml-0.5" />
+                              </button>
+                            )}
+                            
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); setTimerState('idle'); setTimeLeft(25 * 60); }}
+                              className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center hover:bg-zinc-700 transition-colors"
+                            >
+                              <Square className="w-3.5 h-3.5 text-zinc-400 fill-current" />
+                            </button>
+                          </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
