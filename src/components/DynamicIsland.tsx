@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, MoreHorizontal, X, Search, Trash2, FileText, Plus } from 'lucide-react';
+import { MessageCircle, MoreHorizontal, X, Search, Trash2, FileText, Plus, Cloud, Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar } from './ui/calendar';
+
 
 export interface Post {
   id: string;
@@ -55,12 +57,36 @@ function SwipeablePost({ p, onDelete }: { p: Post; onDelete: (e: React.MouseEven
   );
 }
 
+const QUOTES = [
+  "The only way to do great work is to love what you do.",
+  "Design is not just what it looks like and feels like. Design is how it works.",
+  "Simplicity is the ultimate sophistication.",
+  "Stay hungry, stay foolish.",
+  "Innovation distinguishes between a leader and a follower.",
+  "Quality is more important than quantity. One home run is much better than two doubles.",
+  "It's not about money. It's about the people you have, how you're led, and how much you get it.",
+  "Your time is limited, so don't waste it living someone else's life.",
+  "Sometimes life is going to hit you in the head with a brick. Don't lose faith.",
+  "Have the courage to follow your heart and intuition.",
+  "Details matter, it's worth waiting to get it right.",
+  "Great things in business are never done by one person.",
+  "I'm as proud of many of the things we haven't done as the things we have done.",
+  "We're here to put a dent in the universe.",
+  "Let's go invent tomorrow instead of worrying about what happened yesterday.",
+  "Things don't have to change the world to be important.",
+  "You can't connect the dots looking forward; you can only connect them looking backwards.",
+  "Being the richest man in the cemetery doesn't matter to me.",
+  "If you haven't found it yet, keep looking. Don't settle.",
+  "My favorite things in life don't cost any money."
+];
+
 export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] | null }) {
   const [posts, setPosts] = useState<Post[]>(initialPosts || []);
   const [expanded, setExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
-  const [activeTab, setActiveTab] = useState<'posts' | 'time'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'time' | 'quote'>('posts');
+  const [activeQuote, setActiveQuote] = useState(QUOTES[0]);
   const [direction, setDirection] = useState(1);
   const [currentTime, setCurrentTime] = useState(new Date());
   const islandRef = useRef<HTMLDivElement>(null);
@@ -87,6 +113,10 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
 
   useEffect(() => {
     if (!expanded) return;
+    
+    // Pick a random quote every time it opens
+    setActiveQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+
     const handleClick = (e: MouseEvent) => {
       if (islandRef.current && !islandRef.current.contains(e.target as Node)) {
         setExpanded(false);
@@ -104,7 +134,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
   const NOTCH_W = 180;
   const R = 16; // fillet radius
 
-  const EXP_W = 380;
+  const EXP_W = activeTab === 'time' ? 440 : (activeTab === 'quote' ? 380 : 380);
   const EXP_H = 330;
 
   const filteredPosts = posts.filter(p => 
@@ -113,7 +143,8 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
 
   const baseHeight = 125; // top spacer, search bar, and padding
   const listHeight = activeTab === 'time'
-    ? 100
+    ? 220
+    : activeTab === 'quote' ? 120
     : (filteredPosts.length > 0 ? Math.min(3, filteredPosts.length) * 54 : 100);
   const targetHeight = expanded ? baseHeight + listHeight : BEZEL_H + NOTCH_H;
 
@@ -190,16 +221,19 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
               transition={{ duration: 0.12 }}
             >
               <AnimatePresence mode="wait">
-                {activeTab === 'time' && !expanded ? (
+                {activeTab !== 'posts' && !expanded ? (
                   <motion.div
-                    key="time"
+                    key="tab-preview"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.15 }}
                     className="flex items-center text-[#FF9500] font-medium text-[13px] tracking-wide"
                   >
-                    {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {activeTab === 'time' 
+                      ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      : "Daily Quote"
+                    }
                   </motion.div>
                 ) : (
                   <motion.div
@@ -237,18 +271,26 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                     drag="x"
                     dragConstraints={{ left: 0, right: 0 }}
                     onDragEnd={(e, info) => {
+                      const tabs = ['posts', 'time', 'quote'] as const;
                       if (info.offset.x > 30) {
                         setDirection(-1);
-                        setActiveTab('posts');
+                        setActiveTab(prev => {
+                          const idx = tabs.indexOf(prev);
+                          return tabs[(idx - 1 + tabs.length) % tabs.length];
+                        });
                       } else if (info.offset.x < -30) {
                         setDirection(1);
-                        setActiveTab('time');
+                        setActiveTab(prev => {
+                          const idx = tabs.indexOf(prev);
+                          return tabs[(idx + 1) % tabs.length];
+                        });
                       }
                     }}
                     onWheel={(e) => {
                       const now = Date.now();
                       if (now - lastScrollRef.current < 400) return;
-                      const tabs = ['posts', 'time'] as const;
+                      const tabs = ['posts', 'time', 'quote'] as const;
+
                       
                       if (e.deltaY > 10 || e.deltaX > 20) {
                         setDirection(1);
@@ -355,7 +397,7 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                     </button>
                   </div>
                         </motion.div>
-                      ) : (
+                      ) : activeTab === 'time' ? (
                         <motion.div 
                           key="time"
                           custom={direction}
@@ -368,14 +410,60 @@ export function DynamicIsland({ initialPosts = null }: { initialPosts?: Post[] |
                           animate="center"
                           exit="exit"
                           transition={{ duration: 0.2 }}
-                          className="flex flex-col items-center justify-center h-full w-full absolute inset-0 px-5 pb-6"
+                          className="flex items-center justify-center gap-8 h-full w-full absolute inset-0 px-6 pb-2 pt-6"
                         >
-                          <span className="text-5xl font-light text-white tracking-widest tabular-nums">
-                            {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                          <span className="text-[11px] font-semibold tracking-wider text-zinc-500 uppercase mt-3">
-                            {currentTime.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
-                          </span>
+                          {/* Left Side: Time (Vertical) */}
+                          <div className="flex flex-col items-start justify-center h-full pt-1">
+                            <span className="text-zinc-500 text-[11px] font-semibold tracking-wider mb-3 uppercase">Good Morning</span>
+                            
+                            <div className="flex flex-col leading-[0.85] font-light text-white tabular-nums relative mb-4">
+                              <span className="text-[68px] tracking-tight">
+                                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).split(' ')[0].split(':')[0]}
+                              </span>
+                              <span className="text-[68px] tracking-tight text-zinc-400">
+                                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).split(' ')[0].split(':')[1]}
+                              </span>
+                              <span className="absolute -right-8 bottom-1 text-sm font-semibold text-zinc-500 tracking-widest">
+                                {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).split(' ')[1]}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2 mt-auto text-zinc-400 text-[11px] font-semibold">
+                              {currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+                              <span className="flex items-center gap-1"><Cloud className="w-3 h-3"/> 26°</span>
+                            </div>
+                          </div>
+                          
+                          {/* Right Side: Calendar */}
+                          <div className="flex flex-col items-end justify-center h-full border-l border-zinc-800/50 pl-8">
+                             <div className="dark">
+                               <Calendar 
+                                 mode="single" 
+                                 selected={currentTime}
+                                 className="p-0 border-none" 
+                               />
+                             </div>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.div 
+                          key="quote"
+                          custom={direction}
+                          variants={{
+                            enter: (dir: number) => ({ x: dir > 0 ? 20 : -20, opacity: 0 }),
+                            center: { x: 0, opacity: 1 },
+                            exit: (dir: number) => ({ x: dir < 0 ? 20 : -20, opacity: 0 })
+                          }}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                          transition={{ duration: 0.2 }}
+                          className="flex flex-col items-center justify-center h-full w-full absolute inset-0 px-8 py-6 text-center"
+                        >
+                          <span className="text-zinc-500 text-[11px] font-semibold tracking-wider mb-4 uppercase">Daily Quote</span>
+                          <p className="text-[15px] font-medium leading-relaxed text-zinc-100 italic">
+                            "{activeQuote}"
+                          </p>
                         </motion.div>
                       )}
                     </AnimatePresence>
