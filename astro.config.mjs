@@ -19,6 +19,8 @@ export default defineConfig({
     react(),
     AstroPWA({
       registerType: 'autoUpdate',
+      injectRegister: 'script',
+      devOptions: { enabled: true },
       manifest: {
         name: 'unmindful',
         short_name: 'unmindful',
@@ -26,16 +28,19 @@ export default defineConfig({
         theme_color: '#09090b',
         background_color: '#09090b',
         display: 'standalone',
+        start_url: '/',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: '/favicon.svg',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/svg+xml',
+            purpose: 'any maskable'
           },
           {
-            src: 'pwa-512x512.png',
+            src: '/favicon.svg',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/svg+xml',
+            purpose: 'any maskable'
           }
         ]
       },

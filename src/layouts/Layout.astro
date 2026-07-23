@@ -32,6 +32,15 @@ const { posts = null } = Astro.props;
 			applyTheme();
 			document.addEventListener('astro:after-swap', applyTheme);
 		</script>
+		<script>
+			if ('serviceWorker' in navigator) {
+				window.addEventListener('load', () => {
+					navigator.serviceWorker.register('/dev-sw.js?dev-sw', { type: 'module' }).catch(() => {
+						navigator.serviceWorker.register('/sw.js').catch(console.error);
+					});
+				});
+			}
+		</script>
 	</head>
 	<body>
 		<DynamicIsland client:load initialPosts={posts} />
