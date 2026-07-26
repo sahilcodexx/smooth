@@ -12,8 +12,10 @@ import {
   Trash2,
   X,
   Share2,
+  Upload,
 } from "lucide-react";
 import { ShareCardModal } from "./ShareCardModal";
+import { ImportExportModal } from "./ImportExportModal";
 import { Dock, DockIcon } from "./ui/dock";
 import { Separator } from "./ui/separator";
 import {
@@ -52,6 +54,7 @@ export function PostFeed({
     initialUser,
   );
   const [shareModalPost, setShareModalPost] = useState<Post | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   // Settings states
   const [isDark, setIsDark] = useState(true);
@@ -500,6 +503,26 @@ export function PostFeed({
                       sideOffset={12}
                     >
                       <p>New Post</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </DockIcon>
+
+                {/* Import / Export Data */}
+                <DockIcon
+                  className="text-zinc-400 hover:text-amber-400 transition-colors"
+                  onClick={() => setShowImportModal(true)}
+                >
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <span className="size-full p-0 bg-transparent border-0 flex items-center justify-center cursor-pointer outline-none text-current">
+                        <Upload className="size-full" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      className="bg-zinc-900 text-zinc-50 border-zinc-800"
+                      sideOffset={12}
+                    >
+                      <p>Import & Export</p>
                     </TooltipContent>
                   </Tooltip>
                 </DockIcon>
