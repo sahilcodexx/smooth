@@ -38,12 +38,18 @@ if (!post) {
 // Convert markdown to HTML on the server
 import { marked } from 'marked';
 const htmlContent = marked(post.content);
+const rawText = post.content ? post.content.replace(/<[^>]*>?/gm, '').trim() : '';
+const wordCount = rawText ? rawText.split(/\s+/).length : 0;
+const readTime = Math.max(1, Math.ceil(wordCount / 200));
 ---
 
 <Layout posts={allPosts}>
   <main class="max-w-[37em]" style="margin: 6rem auto; padding: 2rem 1.25rem;">
-    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between;">
-      <a href="/" style="text-decoration: none; padding: 0.5rem 0; color: var(--color-muted-foreground); font-family: var(--font-geist); font-size: 0.85rem; font-weight: 500; display: flex; align-items: center;">&larr; Back home</a>
+    <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+      <div class="flex items-center gap-3">
+        <a href="/" style="text-decoration: none; padding: 0.5rem 0; color: var(--color-muted-foreground); font-family: var(--font-geist); font-size: 0.85rem; font-weight: 500; display: flex; align-items: center;">&larr; Back home</a>
+        <span class="text-zinc-500 font-mono text-xs">• {wordCount} words ({readTime} min read)</span>
+      </div>
       <a href={`/create?id=${id}`} style="text-decoration: none; padding: 0.5rem 1rem; background-color: var(--color-foreground); color: var(--color-background); border-radius: 9999px; font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s; font-family: var(--font-geist);" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">Edit</a>
     </div>
     <div class="typeset typeset-article max-w-[37em]" set:html={htmlContent}></div>

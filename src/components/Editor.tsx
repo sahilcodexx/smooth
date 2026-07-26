@@ -335,7 +335,23 @@ export default function Editor({ userId }: EditorProps) {
         >
           &larr; Back home
         </a>
-        <div className="text-sm text-zinc-500 font-mono">{status}</div>
+        <div className="flex items-center gap-2.5 text-xs text-zinc-500 font-mono">
+          <span>{status}</span>
+          {(() => {
+            const text = editor?.getText() || "";
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const mins = Math.max(1, Math.ceil(words / 200));
+            if (words === 0) return null;
+            return (
+              <>
+                <span className="text-zinc-700 dark:text-zinc-800">•</span>
+                <span>{words} {words === 1 ? "word" : "words"}</span>
+                <span className="text-zinc-700 dark:text-zinc-800">•</span>
+                <span>{mins} min read</span>
+              </>
+            );
+          })()}
+        </div>
       </div>
       <div
         className="typeset typeset-article w-full pb-24"
