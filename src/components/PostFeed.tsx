@@ -11,7 +11,9 @@ import {
   LogOut,
   Trash2,
   X,
+  Share2,
 } from "lucide-react";
+import { ShareCardModal } from "./ShareCardModal";
 import { Dock, DockIcon } from "./ui/dock";
 import { Separator } from "./ui/separator";
 import {
@@ -49,6 +51,7 @@ export function PostFeed({
   const [user, setUser] = useState<{ id: string; email: string } | null>(
     initialUser,
   );
+  const [shareModalPost, setShareModalPost] = useState<Post | null>(null);
 
   // Settings states
   const [isDark, setIsDark] = useState(true);
@@ -401,16 +404,29 @@ export function PostFeed({
                     >
                       {truncateTitle(post.title)}
                     </h2>
-                    <span
-                      style={{
-                        fontSize: "0.8rem",
-                        color: "var(--color-muted-foreground)",
-                        fontFamily: "var(--font-geist-mono)",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {formatDate(post.created_at)}
-                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setShareModalPost(post);
+                        }}
+                        className="p-1 rounded-md text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/60 transition-colors"
+                        title="Share as Image Card"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                      </button>
+                      <span
+                        style={{
+                          fontSize: "0.8rem",
+                          color: "var(--color-muted-foreground)",
+                          fontFamily: "var(--font-geist-mono)",
+                        }}
+                      >
+                        {formatDate(post.created_at)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </a>
@@ -756,6 +772,13 @@ export function PostFeed({
           )}
         </AnimatePresence>
       </div>
+      <ShareCardModal
+        isOpen={!!shareModalPost}
+        onClose={() => setShareModalPost(null)}
+        title={shareModalPost?.title || ""}
+        content={shareModalPost?.content || ""}
+        author={user ? user.email.split("@")[0] : "guest"}
+      />
     </TooltipProvider>
   );
 }
