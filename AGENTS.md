@@ -42,6 +42,15 @@ The application uses **Neon Serverless Postgres** for data storage and **Neon Au
 *   **Synchronization Endpoint**: Created [/api/posts/sync-local.ts](file:///home/sahilcodex/Documents/smooth/src/pages/api/posts/sync-local.ts) to batch upsert guest posts into the Neon database.
 *   **On-Login Migration Handler**: Hooked up a pre-redirect synchronization routine in [AuthCard.tsx](file:///home/sahilcodex/Documents/smooth/src/components/AuthCard.tsx) that automatically migrates local guest posts to the cloud and purges the guest local storage when the user logs in.
 
+### 5. Buttery Typing & Caret Smoothness
+*   **Zero per-keystroke React work**: Reworked [Editor.tsx](file:///home/sahilcodex/Documents/smooth/src/components/Editor.tsx) so `onUpdate` only writes to refs (markdown content + dirty state) and schedules a debounced save — no full-document markdown serialization, no `getText()` scans, and no state re-renders on every keystroke. Word count updates are throttled to ~300ms and the save status only flips once per debounce.
+*   **Smooth Caret Animated Overlay**: Added [SmoothCaret.tsx](file:///home/sahilcodex/Documents/smooth/src/components/SmoothCaret.tsx) which tracks ProseMirror cursor position (`coordsAtPos`) with high performance `requestAnimationFrame` and `translate3d(x, y, 0)`. The custom cursor overlay glides buttery-smoothly between character positions using custom cubic-bezier easing (`cubic-bezier(0.16, 1, 0.3, 1)`), automatically resizes to font line-height, snaps quickly on large line jumps (>220px), and gently pulses with a breathing animation when typing pauses.
+*   **Smooth caret-follow scrolling**: Added a rAF-driven scroll easing in [Editor.tsx](file:///home/sahilcodex/Documents/smooth/src/components/Editor.tsx) that glides the caret into a comfort band (18%–52% of viewport) when typing near the edges, cancels on wheel/blur, and never fights native scrolling (`scroll-behavior: auto`).
+*   **Caret/scroll CSS**: Set `caret-color: transparent !important` on `.typeset [contenteditable]` in [globals.css](file:///home/sahilcodex/Documents/smooth/src/styles/globals.css) to suppress the default jumping browser caret, `scroll-padding-bottom: 7rem` (keeps the caret clear of the floating toolbar), `scroll-behavior: auto` on `html`/contenteditable, antialiased font smoothing, and a border-tinted `::selection`.
+### 6. Kokonut UI Toolbar Dock Integration
+*   **Kokonut UI Toolbar**: Integrated [@kokonutui/toolbar](file:///home/sahilcodex/Documents/smooth/src/components/kokonutui/toolbar.tsx) using `motion/react` spring physics, expandable pill selection states, and top animated notification tooltips.
+*   **Dock Replacement**: Replaced the previous dock toolbar in [HomeToolbar.tsx](file:///home/sahilcodex/Documents/smooth/src/components/HomeToolbar.tsx) with the Kokonut UI Toolbar, preserving all navigation, theme toggling, reader settings sliders, and user authentication actions.
+
 ---
 
 ## Development
