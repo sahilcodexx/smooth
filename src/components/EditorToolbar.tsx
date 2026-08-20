@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { type Editor } from '@tiptap/react';
-import { 
-  Bold, 
-  Italic, 
-  Undo, 
-  Redo, 
-  Minus, 
-  Plus, 
+import { useState, useEffect, memo } from "react";
+import { type Editor } from "@tiptap/react";
+import {
+  Bold,
+  Italic,
+  Undo,
+  Redo,
+  Minus,
+  Plus,
   ChevronDown,
   Copy,
   Type,
@@ -20,20 +20,18 @@ import {
   Code,
   Moon,
   Sun,
-  Trash2
-} from 'lucide-react';
-import { Button } from './ui/button';
-import { Separator } from './ui/separator';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
+  Trash2,
+} from "lucide-react";
+import { Toolbar, type ToolbarItem } from "./kokonutui/toolbar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuGroup
-} from './ui/dropdown-menu';
+  DropdownMenuGroup,
+} from "./ui/dropdown-menu";
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -43,262 +41,228 @@ interface EditorToolbarProps {
   onDeletePost?: () => void;
 }
 
-export function EditorToolbar({ editor, fontSize, setFontSize, onNewPost, onDeletePost }: EditorToolbarProps) {
+export const EditorToolbar = memo(function EditorToolbar({
+  editor,
+  fontSize,
+  setFontSize,
+  onNewPost,
+  onDeletePost,
+}: EditorToolbarProps) {
   const [isDark, setIsDark] = useState(true);
+  const [isFormatOpen, setIsFormatOpen] = useState(false);
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
+    setIsDark(document.documentElement.classList.contains("dark"));
   }, []);
 
   const toggleTheme = () => {
     const nextDark = !isDark;
     setIsDark(nextDark);
     if (nextDark) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
     }
   };
 
   if (!editor) return null;
 
-  return (
-    <TooltipProvider>
-      <div className={`dark fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-3 py-2 bg-[#09090b]/96 backdrop-blur-xl border border-zinc-800/80 rounded-full max-w-[calc(100vw-2rem)] overflow-x-auto scrollbar-none ring-1 ring-white/10 ${isDark ? 'shadow-[0_12px_40px_rgba(0,0,0,0.6)]' : 'shadow-none'}`}>
-        {/* Bold */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              className={`h-8 w-8 rounded-full transition-colors flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none ${editor.isActive('bold') ? 'bg-zinc-800 text-zinc-50' : 'text-zinc-400 hover:text-zinc-100'}`}
-              onClick={() => editor.chain().focus().toggleBold().run()}
-            >
-              <Bold className="h-4 w-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Bold</p></TooltipContent>
-        </Tooltip>
-
-        {/* Italic */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              className={`h-8 w-8 rounded-full transition-colors flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none ${editor.isActive('italic') ? 'bg-zinc-800 text-zinc-50' : 'text-zinc-400 hover:text-zinc-100'}`}
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-            >
-              <Italic className="h-4 w-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Italic</p></TooltipContent>
-        </Tooltip>
-
-        <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50 hidden sm:block" />
-
-        {/* Undo */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 disabled:opacity-30 hidden sm:flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none disabled:pointer-events-none"
-              onClick={() => editor.chain().focus().undo().run()}
-              disabled={!editor.can().undo()}
-            >
-              <Undo className="h-4 w-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Undo</p></TooltipContent>
-        </Tooltip>
-
-        {/* Redo */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 disabled:opacity-30 hidden sm:flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none disabled:pointer-events-none"
-              onClick={() => editor.chain().focus().redo().run()}
-              disabled={!editor.can().redo()}
-            >
-              <Redo className="h-4 w-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Redo</p></TooltipContent>
-        </Tooltip>
-
-        <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50 hidden sm:block" />
-
-        {/* Font Size */}
-        <div className="flex items-center gap-1">
-          <Tooltip>
-            <TooltipTrigger asChild>
+  const toolbarItems: ToolbarItem[] = [
+    {
+      id: "bold",
+      title: "Bold",
+      icon: Bold,
+      onClick: () => editor.chain().focus().toggleBold().run(),
+    },
+    {
+      id: "italic",
+      title: "Italic",
+      icon: Italic,
+      onClick: () => editor.chain().focus().toggleItalic().run(),
+    },
+    {
+      id: "undo",
+      title: "Undo",
+      icon: Undo,
+      onClick: () => editor.chain().focus().undo().run(),
+    },
+    {
+      id: "redo",
+      title: "Redo",
+      icon: Redo,
+      onClick: () => editor.chain().focus().redo().run(),
+    },
+    {
+      id: "format",
+      title: "Format",
+      icon: Type,
+      customElement: (
+        <div
+          key="format-dropdown-wrapper"
+          onMouseEnter={() => setIsFormatOpen(true)}
+          onMouseLeave={() => setIsFormatOpen(false)}
+        >
+          <DropdownMenu open={isFormatOpen} onOpenChange={setIsFormatOpen}>
+            <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
-                onClick={() => setFontSize(prev => Math.max(12, prev - 1))}
+                className="relative flex items-center gap-1 rounded-none px-2.5 py-2 font-medium text-xs text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100 transition-colors duration-300 cursor-pointer outline-none select-none"
               >
-                <Minus className="h-4 w-4" />
+                <Type className="size-4 shrink-0 text-zinc-400" />
+                <ChevronDown className="size-3 opacity-50" />
               </button>
-            </TooltipTrigger>
-            <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Decrease Font Size</p></TooltipContent>
-          </Tooltip>
-
-          <div className="px-2 py-1 bg-zinc-800/50 rounded-md text-xs font-mono text-zinc-400 select-none w-10 text-center">
-            {fontSize}PX
-          </div>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
-                onClick={() => setFontSize(prev => Math.min(24, prev + 1))}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-56 bg-[#09090b] border-zinc-800/80 shadow-2xl text-zinc-300 rounded-xl p-1"
+              align="center"
+              sideOffset={12}
+            >
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-zinc-500 font-medium text-xs px-2 py-1.5">
+                Block Style
+              </DropdownMenuLabel>
+              <DropdownMenuItem
+                className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50"
+                onClick={() => editor.chain().focus().setParagraph().run()}
               >
-                <Plus className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Increase Font Size</p></TooltipContent>
-          </Tooltip>
-        </div>
+                <Type className="size-4 mr-2" /> Paragraph
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50"
+                onClick={() =>
+                  editor.chain().focus().toggleHeading({ level: 1 }).run()
+                }
+              >
+                <Heading1 className="size-4 mr-2" /> Heading 1
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50"
+                onClick={() =>
+                  editor.chain().focus().toggleHeading({ level: 2 }).run()
+                }
+              >
+                <Heading2 className="size-4 mr-2" /> Heading 2
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50"
+                onClick={() =>
+                  editor.chain().focus().toggleHeading({ level: 3 }).run()
+                }
+              >
+                <Heading3 className="size-4 mr-2" /> Heading 3
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
 
-        <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
+            <DropdownMenuSeparator className="bg-zinc-800/60 mx-1" />
 
-        {/* Format Dropdown */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="inline-block">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    type="button"
-                    className="h-8 rounded-full gap-1 text-zinc-300 hover:text-zinc-100 font-normal px-4 hover:bg-zinc-800 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
-                  >
-                    Format <ChevronDown className="h-3 w-3 opacity-50" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 bg-[#18181b] border-zinc-800/60 shadow-xl text-zinc-300 rounded-xl p-1" align="end" sideOffset={12}>
-                  
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-zinc-500 font-medium text-xs px-2 py-1.5">Block Style</DropdownMenuLabel>
-                    <DropdownMenuItem className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50" onClick={() => editor.chain().focus().setParagraph().run()}>
-                      <Type /> Paragraph
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
-                      <Heading1 /> Heading 1
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
-                      <Heading2 /> Heading 2
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}>
-                      <Heading3 /> Heading 3
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  
-                  <DropdownMenuSeparator className="bg-zinc-800/60 mx-1" />
-                  
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-zinc-500 font-medium text-xs px-2 py-1.5">Lists</DropdownMenuLabel>
-                    <DropdownMenuItem className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50" onClick={() => editor.chain().focus().toggleBulletList().run()}>
-                      <List /> Bullet List
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50" onClick={() => editor.chain().focus().toggleOrderedList().run()}>
-                      <ListOrdered /> Numbered List
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                  
-                  <DropdownMenuSeparator className="bg-zinc-800/60 mx-1" />
- 
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel className="text-zinc-500 font-medium text-xs px-2 py-1.5">Insert</DropdownMenuLabel>
-                    <DropdownMenuItem className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50" onClick={() => editor.chain().focus().toggleBlockquote().run()}>
-                      <Quote /> Blockquote
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50" onClick={() => editor.chain().focus().toggleCodeBlock().run()}>
-                      <Code /> Code Block
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
-                      <SquareSlash /> Divider
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
- 
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Format Blocks</p></TooltipContent>
-        </Tooltip>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-zinc-500 font-medium text-xs px-2 py-1.5">
+                Lists
+              </DropdownMenuLabel>
+              <DropdownMenuItem
+                className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50"
+                onClick={() => editor.chain().focus().toggleBulletList().run()}
+              >
+                <List className="size-4 mr-2" /> Bullet List
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50"
+                onClick={() =>
+                  editor.chain().focus().toggleOrderedList().run()
+                }
+              >
+                <ListOrdered className="size-4 mr-2" /> Numbered List
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
 
-        <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
+            <DropdownMenuSeparator className="bg-zinc-800/60 mx-1" />
 
-        {/* Create Button */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 transition-colors flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
-              onClick={onNewPost}
-            >
-              <Plus className="h-4 w-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Start a new post</p></TooltipContent>
-        </Tooltip>
-
-        <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
-
-        {/* Copy Markdown */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 transition-colors flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
-              onClick={() => {
-                // @ts-ignore
-                const md = editor.storage.markdown.getMarkdown();
-                navigator.clipboard.writeText(md);
-              }}
-            >
-              <Copy className="h-4 w-4" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Copy Markdown</p></TooltipContent>
-        </Tooltip>
-
-        <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
-
-        {/* Delete Post */}
-        {onDeletePost && (
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="h-8 w-8 rounded-full text-red-400 hover:text-red-300 hover:bg-red-950/20 transition-colors flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
-                  onClick={onDeletePost}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="bg-zinc-900 text-red-200 border-zinc-800"><p>Delete Post</p></TooltipContent>
-            </Tooltip>
-            <Separator orientation="vertical" className="mx-1 h-6 bg-zinc-800/50" />
-          </>
-        )}
-
-        {/* Theme Toggle */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              className="h-8 w-8 rounded-full text-zinc-400 hover:text-zinc-100 flex items-center justify-center cursor-pointer bg-transparent border-0 outline-none"
-              onClick={toggleTheme}
-            >
-              {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent className="bg-zinc-900 text-zinc-50 border-zinc-800"><p>Toggle Theme</p></TooltipContent>
-        </Tooltip>
-
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-zinc-500 font-medium text-xs px-2 py-1.5">
+                Insert
+              </DropdownMenuLabel>
+              <DropdownMenuItem
+                className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50"
+                onClick={() => editor.chain().focus().toggleBlockquote().run()}
+              >
+                <Quote className="size-4 mr-2" /> Blockquote
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50"
+                onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+              >
+                <Code className="size-4 mr-2" /> Code Block
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer focus:bg-zinc-800 focus:text-zinc-50"
+                onClick={() =>
+                  editor.chain().focus().setHorizontalRule().run()
+                }
+              >
+                <SquareSlash className="size-4 mr-2" /> Divider
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-    </TooltipProvider>
+      ),
+    },
+    {
+      id: "font-size-dec",
+      title: "Decrease Font Size",
+      icon: Minus,
+      onClick: () => setFontSize((prev) => Math.max(12, prev - 1)),
+    },
+    {
+      id: "font-size-inc",
+      title: "Increase Font Size",
+      icon: Plus,
+      onClick: () => setFontSize((prev) => Math.min(24, prev + 1)),
+    },
+    {
+      id: "new-post",
+      title: "New Post",
+      icon: Plus,
+      onClick: onNewPost,
+    },
+    {
+      id: "copy-markdown",
+      title: "Copy Markdown",
+      icon: Copy,
+      onClick: () => {
+        // @ts-ignore
+        const md = editor.storage.markdown.getMarkdown();
+        navigator.clipboard.writeText(md);
+      },
+    },
+    ...(onDeletePost
+      ? [
+          {
+            id: "delete-post",
+            title: "Delete Post",
+            icon: Trash2,
+            iconClassName: "text-red-400",
+            onClick: onDeletePost,
+          },
+        ]
+      : []),
+  ];
+
+  return (
+    <div className="dark fixed bottom-8 left-1/2 -translate-x-1/2 z-50 pointer-events-auto max-w-[calc(100vw-2rem)] overflow-x-auto scrollbar-none">
+      <Toolbar
+        items={toolbarItems}
+        toggleButton={{
+          iconOn: Sun,
+          iconOff: Moon,
+          labelOn: "Light",
+          labelOff: "Dark",
+          isToggled: !isDark,
+          onToggle: toggleTheme,
+        }}
+      />
+    </div>
   );
-}
+});
