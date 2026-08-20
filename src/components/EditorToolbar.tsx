@@ -108,7 +108,7 @@ export const EditorToolbar = memo(function EditorToolbar({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="relative flex items-center gap-1 rounded-none px-2.5 py-2 font-medium text-xs text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100 transition-colors duration-300 cursor-pointer outline-none select-none"
+                className="relative flex items-center gap-1 rounded-full px-2.5 py-2 font-medium text-xs text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100 transition-colors duration-300 cursor-pointer outline-none select-none"
               >
                 <Type className="size-4 shrink-0 text-zinc-400" />
                 <ChevronDown className="size-3 opacity-50" />
