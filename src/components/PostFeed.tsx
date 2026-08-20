@@ -512,7 +512,7 @@ export function PostFeed({
                       >
                         <DropdownMenu open={isSlidersOpen} onOpenChange={setIsSlidersOpen}>
                           <DropdownMenuTrigger asChild>
-                            <button className="relative flex items-center rounded-none px-3 py-2 font-medium text-sm text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100 transition-colors duration-300 cursor-pointer outline-none select-none">
+                            <button className="relative flex items-center rounded-full px-3 py-2 font-medium text-sm text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100 transition-colors duration-300 cursor-pointer outline-none select-none">
                               <Sliders className="size-4 shrink-0 text-zinc-400" />
                             </button>
                           </DropdownMenuTrigger>
