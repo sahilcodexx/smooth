@@ -2,7 +2,7 @@
 
 /**
  * @author: @dorianbaffier
- * @description: Kokonut UI Toolbar
+ * @description: Kokonut UI Toolbar with full rounded pill radius
  * @version: 1.0.0
  * @website: https://kokonutui.com
  * @github: https://github.com/kokonut-labs/kokonutui
@@ -92,7 +92,7 @@ export function Toolbar({
         className={cn(
           "relative flex items-center gap-3 p-2",
           "bg-zinc-950/95 dark:bg-[#09090b]/95 border border-zinc-800/80 shadow-2xl backdrop-blur-md",
-          "rounded-xl border",
+          "rounded-full border",
           "transition-all duration-200 ring-1 ring-white/10",
           className
         )}
@@ -117,11 +117,11 @@ export function Toolbar({
               <motion.button
                 animate="animate"
                 className={cn(
-                  "relative flex items-center rounded-none px-3 py-2 cursor-pointer outline-none select-none",
-                  "font-medium text-sm transition-colors duration-300",
+                  "relative flex items-center rounded-full px-3 py-2 cursor-pointer outline-none select-none",
+                  "font-medium text-sm transition-colors duration-200",
                   isSelected
-                    ? "rounded-lg bg-[#1F9CFE] text-white shadow-sm"
-                    : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100"
+                    ? "rounded-full bg-blue-600 text-white font-semibold shadow-sm"
+                    : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-100 hover:rounded-full"
                 )}
                 custom={shouldShowLabel}
                 initial={false}
@@ -136,14 +136,14 @@ export function Toolbar({
                   className={cn(
                     "size-4 shrink-0 transition-colors",
                     item.iconClassName,
-                    isSelected && "text-white"
+                    isSelected ? "text-white" : undefined
                   )}
                 />
                 <AnimatePresence initial={false}>
                   {shouldShowLabel && (
                     <motion.span
                       animate="animate"
-                      className="overflow-hidden whitespace-nowrap font-medium text-xs ml-1"
+                      className="overflow-hidden whitespace-nowrap font-semibold text-xs ml-1 text-white"
                       exit="exit"
                       initial="initial"
                       transition={transition as any}
@@ -160,22 +160,17 @@ export function Toolbar({
           {toggleButton && (
             <motion.button
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 cursor-pointer outline-none select-none",
-                "rounded-lg border shadow-sm transition-all duration-200",
-                "hover:shadow-md active:border-[#1F9CFE]/50",
+                "flex items-center gap-2 px-3.5 py-1.5 cursor-pointer outline-none select-none font-semibold",
+                "rounded-full border shadow-sm transition-all duration-200",
+                "hover:shadow-md active:border-blue-500",
                 toggleButton.isToggled
                   ? [
-                      "bg-[#1F9CFE] text-white",
-                      "border-[#1F9CFE]/30",
-                      "hover:bg-[#1F9CFE]/90",
-                      "hover:border-[#1F9CFE]/40",
+                      "bg-blue-600 text-white border-blue-500/40",
+                      "hover:bg-blue-500",
                     ]
                   : [
-                      "bg-zinc-900 text-zinc-400",
-                      "border-zinc-800/80",
-                      "hover:bg-zinc-800",
-                      "hover:text-zinc-100",
-                      "hover:border-zinc-700",
+                      "bg-zinc-900 text-zinc-400 border-zinc-800/80",
+                      "hover:bg-zinc-800 hover:text-zinc-100",
                     ]
               )}
               onClick={toggleButton.onToggle}
