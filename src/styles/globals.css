@@ -25,6 +25,8 @@ body {
   color: var(--color-foreground);
   font-family: var(--font-choice, var(--font-geist));
   transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Tailwind utility fallbacks since Tailwind is not installed */
@@ -62,6 +64,9 @@ body {
 html {
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
+  scroll-behavior: auto;
+  scroll-padding-top: 1.5rem;
+  scroll-padding-bottom: 7rem;
 }
 
 /* Utilities to hide scrollbar and create smooth fading scroll masks */
@@ -77,4 +82,27 @@ html {
   mask-image: linear-gradient(to bottom, black calc(100% - 14px), transparent);
   -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 14px), transparent);
 }
+
+/* Buttery smooth typing cursor overlay */
+.typeset .ProseMirror,
+.typeset [contenteditable] {
+  caret-color: transparent !important;
+  scroll-behavior: auto;
+}
+
+.smooth-caret-bar {
+  transition: transform 85ms cubic-bezier(0.16, 1, 0.3, 1),
+              height 80ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 100ms ease;
+}
+
+.smooth-caret-bar.smooth-caret-jumping {
+  transition: transform 35ms ease-out, height 45ms ease-out, opacity 100ms ease;
+}
+
+::selection {
+  background: var(--color-border);
+  color: var(--color-foreground);
+}
+
 
