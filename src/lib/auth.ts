@@ -170,3 +170,87 @@ export async function getSessionUser(
 
   return null;
 }
+
+/**
+ * Mint a first-party session for a (possibly social) user.
+ *
+ * Shared by the browser flow (/api/auth/login-social) and the native app flow
+ * (/api/auth/mobile-callback) so both end up with identical session semantics:
+ * register-if-missing + 30-day `sessions` row + returned bearer token.
+ */
+export async function provisionSession(
+  user: { id: string; email: string },
+): Promise<{ token: string; maxAge: number; userId: string; email: string }> {
+  await initAuthTables();
+
+  const dbUrl = import.meta.env.DATABASE_URL;
+  if (!dbUrl) throw new Error("DATABASE_URL is not configured");
+  const sql = neon(dbUrl);
+
+  const email = user.email.toLowerCase().trim();
+
+  // Reuse the local record if either the id or the email already exists, so a
+  // social login links to the same account the user created with a password.
+  const existing = await sql`
+    SELECT id FROM users WHERE id = ${user.id} OR email = ${email} LIMIT 1;
+  `;
+
+  let userId = user.id;
+  if (existing.length > 0) {
+    userId = existing[0].id;
+  } else {
+    await sql`
+      INSERT INTO users (id, email, password_hash)
+      VALUES (${user.id}, ${email}, 'social-login-google');
+    `;
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const sessionId = crypto.randomUUID();
+  const maxAge = 30 * 24 * 60 * 60; // 30 days
+  const expiresAt = new Date(Date.now() + maxAge * 1000);
+
+  await sql`
+    INSERT INTO sessions (id, user_id, token, expires_at)
+    VALUES (${sessionId}, ${userId}, ${token}, ${expiresAt});
+  `;
+
+  return { token, maxAge, userId, email };
+}
+
+/**
+ * Resolve a Neon Auth (Better Auth) session server-side by forwarding the
+ * browser's cookie header, plus the one-shot verifier Neon appends to the
+ * OAuth callback URL.
+ */
+export async function resolveNeonSession(
+  cookieHeader: string | null,
+  verifier: string | null,
+): Promise<{ id: string; email: string } | null> {
+  const authUrl =
+    import.meta.env.NEON_AUTH_BASE_URL || process.env.NEON_AUTH_BASE_URL;
+  if (!authUrl) return null;
+
+  try {
+    const url = new URL(`${authUrl}/get-session`);
+    if (verifier) url.searchParams.set("neon_auth_session_verifier", verifier);
+
+    const res = await fetch(url.toString(), {
+      headers: {
+        Accept: "application/json",
+        ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      },
+    });
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const user = data?.user ?? data?.data?.user;
+    if (user?.email && user?.id) {
+      return { id: user.id, email: user.email };
+    }
+  } catch (err) {
+    console.error("Error verifying Neon Auth session:", err);
+  }
+
+  return null;
+}

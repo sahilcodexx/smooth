@@ -1,0 +1,63 @@
+name: unmindful
+description: "unmindful — where random thoughts find their home."
+publish_to: 'none'
+
+# versionName / versionCode for the Android build.
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # --- Design system -------------------------------------------------------
+  # The Material 3 Expressive component kit: 44 M3E widgets with spring
+  # physics, shape morphing, shared haptics and the M3E token foundations.
+  material_3_expressive: ^1.1.4
+  # Official Material library. Since Flutter 3.47 the Material widgets live
+  # here instead of `package:flutter/material.dart`.
+  material_ui: ^1.5.0
+
+  # --- Networking & auth ---------------------------------------------------
+  dio: ^5.11.1
+  flutter_secure_storage: ^11.2.0
+  app_links: ^7.2.1
+  url_launcher: ^6.3.2
+
+  # --- Storage -------------------------------------------------------------
+  shared_preferences: ^2.5.5
+
+  # --- Content -------------------------------------------------------------
+  flutter_markdown_plus: any
+  intl: ^0.20.3
+  flutter_svg: ^2.3.0
+
+  # --- Native sharing & files ---------------------------------------------
+  share_plus: ^13.3.1
+  file_picker: ^13.1.0
+  path_provider: ^2.1.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/google_g.svg
+
+  fonts:
+    # The web app is set in Geist; bundling the real variable TTFs keeps both
+    # surfaces in one typeface with no runtime download.
+    - family: Geist
+      fonts:
+        - asset: assets/fonts/Geist.ttf
+        - asset: assets/fonts/Geist-Italic.ttf
+          style: italic
+    - family: GeistMono
+      fonts:
+        - asset: assets/fonts/GeistMono.ttf

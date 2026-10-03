@@ -26,3 +26,15 @@ pnpm-debug.log*
 
 # Vercel folder
 .vercel/
+
+# --- Flutter app (app/) ---
+app/build/
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/android/.gradle/
+app/android/local.properties
+app/android/app/debug/
+app/android/app/profile/
+app/android/app/release/
+app/unmindful.iml

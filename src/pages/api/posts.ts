@@ -117,15 +117,46 @@ export const GET: APIRoute = async ({ request }) => {
 
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
+    const sql = neon(import.meta.env.DATABASE_URL);
 
+    // List mode: no ?id -> return the authenticated user's posts as JSON.
+    // The native app has no server-side render pass, so it needs this to
+    // build its feed. Mirrors the SSR query in src/pages/index.astro.
     if (!id) {
-      return new Response(JSON.stringify({ error: 'ID is required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const limit = Math.min(
+        Math.max(parseInt(url.searchParams.get('limit') || '100') || 100, 1),
+        500
+      );
+      const offset = Math.max(parseInt(url.searchParams.get('offset') || '0') || 0, 0);
+      const search = url.searchParams.get('q')?.trim();
+
+      const rows = search
+        ? await sql`
+            SELECT id, title, created_at, updated_at
+            FROM posts
+            WHERE user_id = ${user.id}
+              AND (title ILIKE ${'%' + search + '%'} OR content ILIKE ${'%' + search + '%'})
+            ORDER BY created_at DESC
+            LIMIT ${limit} OFFSET ${offset};
+          `
+        : await sql`
+            SELECT id, title, created_at, updated_at
+            FROM posts
+            WHERE user_id = ${user.id}
+            ORDER BY created_at DESC
+            LIMIT ${limit} OFFSET ${offset};
+          `;
+
+      const [{ count }] = await sql`
+        SELECT COUNT(*)::int AS count FROM posts WHERE user_id = ${user.id};
+      `;
+
+      return new Response(
+        JSON.stringify({ posts: rows, total: count ?? 0 }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
-    const sql = neon(import.meta.env.DATABASE_URL);
     // Fetch only if it belongs to the logged-in user
     const posts = await sql`SELECT * FROM posts WHERE id = ${id} AND user_id = ${user.id}`;
     const post = posts[0];
