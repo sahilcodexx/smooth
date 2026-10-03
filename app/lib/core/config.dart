@@ -13,13 +13,24 @@ class AppConfig {
     defaultValue: 'https://unmindful.vercel.app',
   );
 
+  /// Fallback Neon Auth URL, used when `/api/config` cannot be reached (for
+  /// example on a deployment that predates that endpoint). It is public
+  /// information -- the same value `/api/config` returns -- so embedding it
+  /// leaks nothing, and it keeps Google sign-in working without a rebuild.
+  static const String fallbackNeonAuthUrl =
+      'https://ep-late-violet-azfo9j5h.neonauth.c-3.ap-southeast-1.aws.neon.tech/neondb/auth';
+
   /// Custom scheme registered by the Android manifest for OAuth return.
   static const String appScheme = 'smooth';
 
   /// Host + path the browser is redirected to after Google sign-in.
-  /// Neon Auth bounces here; the server resolves the session and redirects
-  /// back into the app with a one-time token.
-  static const String mobileCallbackPath = '/api/auth/mobile-callback';
+  ///
+  /// This is a *page*, not an API route, on purpose: Neon Auth's
+  /// `/get-session` requires a session challenge cookie scoped to the Neon
+  /// domain, which Chrome will not send to our own origin. Only the browser
+  /// holds that cookie, so the browser has to resolve the session and then
+  /// hand the app a token. See src/pages/auth/mobile.astro.
+  static const String mobileCallbackPath = '/auth/mobile';
 
   static const String authCallbackUri = '$appScheme://auth/callback';
 

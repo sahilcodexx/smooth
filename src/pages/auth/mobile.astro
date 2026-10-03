@@ -1,0 +1,135 @@
+---
+export const prerender = false;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Signing in — unmindful</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        background: #09090b;
+        color: #e4e4e7;
+        font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, sans-serif;
+        padding: 24px;
+        text-align: center;
+      }
+      .mark {
+        width: 48px; height: 48px; margin: 0 auto 20px;
+        border-radius: 14px; background: #18181b;
+        display: grid; place-items: center;
+      }
+      .mark i {
+        width: 12px; height: 12px; border-radius: 3px;
+        background: #a1a1aa; display: block;
+        transform: rotate(45deg);
+      }
+      h1 { font-size: 1.15rem; font-weight: 500; margin: 0 0 6px; }
+      p { margin: 0; color: #a1a1aa; font-size: .875rem; }
+      .err { color: #fca5a5; white-space: pre-wrap; text-align: left; }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="mark"><i></i></div>
+      <h1 id="title">Finishing sign-in…</h1>
+      <p id="detail">Verifying your Google account.</p>
+    </div>
+
+    <script is:inline define:vars={{ neonAuthUrl: import.meta.env.NEON_AUTH_BASE_URL || process.env.NEON_AUTH_BASE_URL || '' }}>
+      const APP_SCHEME = 'smooth://auth/callback';
+      const titleEl = document.getElementById('title');
+      const detailEl = document.getElementById('detail');
+
+      function fail(message) {
+        titleEl.textContent = 'Sign-in failed';
+        detailEl.className = 'err';
+        detailEl.textContent = message;
+      }
+
+      function toApp(params) {
+        const qs = new URLSearchParams(params).toString();
+        // Give the browser a beat to paint before handing off to the app.
+        setTimeout(() => { window.location.href = APP_SCHEME + '?' + qs; }, 400);
+      }
+
+      (async () => {
+        const params = new URLSearchParams(window.location.search);
+
+        const oauthError = params.get('error');
+        if (oauthError) {
+          fail(decodeURIComponent(params.get('error_description') || oauthError));
+          return;
+        }
+
+        if (!neonAuthUrl) {
+          fail('This deployment has no Neon Auth URL configured.');
+          return;
+        }
+
+        const verifier = params.get('neon_auth_session_verifier');
+        if (!verifier) {
+          fail('No session verifier was returned. Please try signing in again.');
+          return;
+        }
+
+        // Resolve the Neon session here, in the browser, because this is the
+        // only context that holds the session challenge cookie.
+        const sessionUrl =
+          neonAuthUrl + '/get-session?neon_auth_session_verifier=' + encodeURIComponent(verifier);
+
+        let user;
+        try {
+          const res = await fetch(sessionUrl, {
+            credentials: 'include',
+            headers: { Accept: 'application/json' },
+          });
+          const data = await res.json().catch(() => null);
+          user = data?.user ?? data?.data?.user ?? null;
+        } catch (err) {
+          fail('Could not reach the auth service: ' + err);
+          return;
+        }
+
+        if (!user?.id || !user?.email) {
+          fail(
+            'Google sign-in did not establish a session.\n\n' +
+              'If this keeps happening, allow third-party cookies for this site, ' +
+              'or use email and password instead.'
+          );
+          return;
+        }
+
+        // Turn the verified identity into a token the native app can store.
+        try {
+          const res = await fetch('/api/auth/mobile-exchange', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ id: user.id, email: user.email }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data?.token) {
+            throw new Error(data?.error || 'Could not create a session.');
+          }
+          toApp({
+            status: 'ok',
+            token: data.token,
+            maxAge: String(data.maxAge ?? 0),
+            id: data.user.id,
+            email: data.user.email,
+          });
+        } catch (err) {
+          fail('Could not sign you in: ' + err);
+        }
+      })();
+    </script>
+  </body>
+</html>

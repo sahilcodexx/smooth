@@ -16,7 +16,7 @@ export const GET: APIRoute = async () => {
     JSON.stringify({
       neonAuthUrl,
       googleEnabled: Boolean(neonAuthUrl),
-      mobileCallback: '/api/auth/mobile-callback',
+      mobileCallback: '/auth/mobile',
       appScheme: 'smooth://auth/callback'
     }),
     {

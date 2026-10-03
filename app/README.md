@@ -63,7 +63,8 @@ lib/
 | `GET /api/auth/session` | Validates the stored token on launch |
 | `POST /api/auth/login` \| `/register` | Credential sign-in/up; sets the cookie |
 | `POST /api/auth/logout` | Ends the session |
-| `POST /api/auth/mobile-callback` | OAuth return leg (see below) |
+| `GET /auth/mobile` | OAuth return leg, resolves the session in-browser (see below) |
+| `POST /api/auth/mobile-exchange` | Trades a browser-verified identity for a token |
 | `POST /api/auth/login-social` | Social session bridging (web flow) |
 | `GET /api/posts` | Lists notes (`?q=`, `?limit=`, `?offset=`); `?id=` for one |
 | `POST /api/posts` | Upserts a note |
@@ -84,17 +85,32 @@ app  -> POST {neonAuthUrl}/sign-in/social  ->  Google
      -> smooth://auth/callback?token=...          <- back into the app
 ```
 
-`/api/auth/mobile-callback` receives the redirect as a **top-level navigation**,
-so the browser hands it the Better Auth cookie. It resolves the Neon session,
-mints a first-party token, and redirects into the app.
+`/auth/mobile` receives the redirect. It is a **page**, not an API route,
+because Neon Auth's `/get-session` requires a *session challenge cookie*
+scoped to the Neon domain:
 
-**Add these to your Neon Auth redirect-URL allowlist:**
+```
+GET {neonAuthUrl}/get-session?neon_auth_session_verifier=...
+-> {"code":"SESSION_CHALLENGE_COOKIE_NOT_FOUND"}
+```
 
-- `https://unmindful.vercel.app/api/auth/mobile-callback`
-- `smooth://auth/callback`
+Chrome will not send that cookie to `unmindful.vercel.app` (cross-site), so
+neither our server nor the Dart client can resolve the session. Only the
+browser holds it — which is exactly what the web `AuthCard` relies on. So
+`/auth/mobile` resolves the session client-side with `credentials: 'include'`,
+trades the verified identity for a token via `/api/auth/mobile-exchange`, and
+redirects into the app.
 
-Without the first, Google rejects the redirect; without the second, the app
-cannot receive the token.
+**You must add this to the Neon Auth redirect-URL allowlist:**
+
+- `https://unmindful.vercel.app/auth/mobile`
+
+The `smooth://auth/callback` scheme does **not** need registering — the
+callback origin must be allowlisted, and the app catches the custom scheme
+itself via the manifest intent-filter.
+
+Nothing else is required: the `/api/auth/mobile-exchange` and `/api/config`
+endpoints are already deployed alongside it.
 
 ## Running
 
