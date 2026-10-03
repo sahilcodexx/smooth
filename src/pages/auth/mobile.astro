@@ -86,12 +86,16 @@ export const prerender = false;
           neonAuthUrl + '/get-session?neon_auth_session_verifier=' + encodeURIComponent(verifier);
 
         let user;
+        let lastStatus = 0;
+        let lastBody = '';
         try {
           const res = await fetch(sessionUrl, {
             credentials: 'include',
             headers: { Accept: 'application/json' },
           });
-          const data = await res.json().catch(() => null);
+          lastStatus = res.status;
+          lastBody = await res.text();
+          const data = JSON.parse(lastBody || 'null');
           user = data?.user ?? data?.data?.user ?? null;
         } catch (err) {
           fail('Could not reach the auth service: ' + err);
@@ -99,10 +103,13 @@ export const prerender = false;
         }
 
         if (!user?.id || !user?.email) {
+          // Surface the real response so this stops being guesswork.
           fail(
             'Google sign-in did not establish a session.\n\n' +
-              'If this keeps happening, allow third-party cookies for this site, ' +
-              'or use email and password instead.'
+              'GET /get-session -> HTTP ' + (lastStatus || '?') + '\n' +
+              'response: ' + String(lastBody).slice(0, 400) + '\n\n' +
+              'A SESSION_CHALLENGE_COOKIE_NOT_FOUND here means Chrome blocked the ' +
+              'Neon cookie because it is third-party.'
           );
           return;
         }
