@@ -84,6 +84,20 @@ class OAuthFlow extends ChangeNotifier {
       if (neonAuthUrl == null || neonAuthUrl.isEmpty) {
         throw Exception('Google sign-in is not configured on this server.');
       }
+      if (_api.configUnavailable) {
+        // The backend answered, but not with our config endpoint. That is
+        // almost always an undeployed build rather than a real misconfiguration,
+        // and the OAuth callback will 404 too, so say so plainly instead of
+        // sending the user into a browser that cannot come back.
+        throw Exception(
+          'This backend is out of date.\n\n'
+          'Sign in needs these endpoints:\n'
+          '  GET  /api/config\n'
+          '  GET  /api/auth/mobile-callback\n\n'
+          'Deploy the latest backend, then try again.\n'
+          '(${AppConfig.apiBaseUrl})',
+        );
+      }
 
       // Neon Auth hands back the Google authorization URL to visit.
       //
@@ -138,6 +152,30 @@ class OAuthFlow extends ChangeNotifier {
     } catch (e) {
       _set(busy: false, error: _cleanError(e));
     }
+  }
+
+  // -------------------------------------------------------- in-app webview
+
+  /// Adopt a session handed back by the in-app WebView (see
+  /// [GoogleOAuthScreen]).
+  Future<void> adoptToken({
+    required String token,
+    required String id,
+    required String email,
+  }) async {
+    _set(busy: true, error: null);
+    try {
+      await _auth.adoptSocialSession(token: token, id: id, email: email);
+      _set(busy: false, error: null);
+    } catch (e) {
+      _set(busy: false, error: _cleanError(e));
+    }
+  }
+
+  /// Show (or clear, when [message] is empty) an error raised while the
+  /// WebView was driving the OAuth handshake.
+  void reportError(String message) {
+    _set(busy: false, error: message.isEmpty ? null : message);
   }
 
   // --------------------------------------------------------------- deep link

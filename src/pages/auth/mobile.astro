@@ -63,6 +63,34 @@ export const prerender = false;
       (async () => {
         const params = new URLSearchParams(window.location.search);
 
+        // Entry mode: the native app opens this page inside a WebView with
+        // third-party cookies enabled, which starts the OAuth round trip.
+        // Chrome's third-party cookie policy would otherwise block Neon's
+        // session challenge cookie before the user ever picks an account.
+        if (params.get('start') === 'google') {
+          titleEl.textContent = 'Signing you in\u2026';
+          detailEl.textContent = 'Opening Google.';
+          try {
+            const initRes = await fetch(neonAuthUrl + '/sign-in/social', {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              body: JSON.stringify({
+                provider: 'google',
+                callbackURL: window.location.origin + window.location.pathname,
+              }),
+            });
+            const initData = await initRes.json();
+            if (!initRes.ok || !initData?.url) {
+              throw new Error(initData?.error || initData?.message || 'Could not start sign-in.');
+            }
+            window.location.href = initData.url;
+          } catch (err) {
+            fail('Could not start sign-in: ' + err);
+          }
+          return;
+        }
+
         const oauthError = params.get('error');
         if (oauthError) {
           fail(decodeURIComponent(params.get('error_description') || oauthError));

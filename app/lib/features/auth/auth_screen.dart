@@ -3,11 +3,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 
 import '../../app.dart';
+import '../../core/theme.dart';
+import '../oauth/google_oauth_screen.dart';
 
 /// Email/password + Google sign-in.
 ///
-/// The Google path leaves the app for a browser tab; the return trip arrives
-/// as a deep link handled in [OAuthFlow].
+/// The Google path runs in an in-app WebView (see [GoogleOAuthScreen])
+/// because Neon Auth needs a third-party cookie that Chrome refuses to send.
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -91,7 +93,14 @@ class _AuthScreenState extends State<AuthScreen> {
                     ],
 
                     M3EButton(
-                      onPressed: flow.busy ? null : flow.signInWithGoogle,
+                      onPressed: flow.busy
+                          ? null
+                          : () => Navigator.of(context).push(
+                                AppPageTransitions.fadeThrough<void>(
+                                  const GoogleOAuthScreen(),
+                                  name: 'google-oauth',
+                                ),
+                              ),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

@@ -103,9 +103,15 @@ class ApiClient {
 
   String? get token => _cachedToken;
 
-  /// Public runtime config from the backend (Neon Auth URL, OAuth callback
-  /// path). Cached for the process lifetime — it only changes on deploy.
+  /// Public runtime config from the backend (the Neon Auth URL). Cached for
+  /// the process lifetime; it only changes per deployment.
   String? _neonAuthUrl;
+
+  /// True when `/api/config` could not be read, which usually means the
+  /// backend is running a build that predates the endpoint.
+  bool _configUnavailable = false;
+
+  bool get configUnavailable => _configUnavailable;
 
   Future<String?> neonAuthUrl() async {
     if (_neonAuthUrl != null) return _neonAuthUrl;
@@ -117,9 +123,11 @@ class ApiClient {
         return url;
       }
     } catch (_) {
-      // Offline: fall back to whatever we cached, if anything.
+      _configUnavailable = true;
     }
-    return _neonAuthUrl;
+    // Fall back to the known public URL so a stale backend still lets the
+    // user sign in rather than failing with a misleading "not configured".
+    return _neonAuthUrl ?? AppConfig.fallbackNeonAuthUrl;
   }
 
   Future<void> loadToken() async {
