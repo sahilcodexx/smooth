@@ -1,0 +1,4 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "ignoreCommand": "node smooth-desktop/scripts/vercel-ignore.mjs"
+}
