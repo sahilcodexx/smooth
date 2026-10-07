@@ -1,0 +1,17 @@
+{
+  "name": "unmindful-desktop",
+  "version": "0.1.0",
+  "description": "unmindful desktop — Tauri shell for the unmindful web app",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "tauri start",
+    "web": "tauri start",
+    "build": "tauri build",
+    "build:debug": "tauri build --no-bundle"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.2.5"
+  }
+}
