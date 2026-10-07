@@ -9,6 +9,16 @@ sessions. Every site feature (feed, editor, share cards, PWA install prompts,
 OAuth) works unchanged because it literally *is* the website, in a native
 frame.
 
+## Features
+
+- **System tray** — Open unmindful · Quick capture · Check for updates · Quit.
+  Closing the main window minimizes to tray instead of exiting.
+- **Global quick capture** — `Ctrl+Shift+U` anywhere in the OS pops a compact
+  always-on-top capture window (`/create?new=true&capture=1`) anchored
+  bottom-right of your monitor.
+- **Auto-updater** — the app checks your GitHub releases and updates itself
+  (signed with minisign; see `UPDATER-KEYS.md` for the release secrets).
+
 **Why it's lightweight:** Tauri ships no browser engine — it reuses the WebView
 already on the user's OS. Binaries are ~5–15 MB instead of Electron's ~150+ MB.
 
@@ -49,6 +59,22 @@ npm install
 npm run dev          # dev build with hot Rust reload + devtools
 npm run build        # optimized release build + native installers
 ```
+
+## Releasing updates
+
+One-time setup: add the two signing secrets from `UPDATER-KEYS.md`.
+
+1. Bump `version` in `src-tauri/Cargo.toml`, `src-tauri/tauri.conf.json`, and
+   `package.json`.
+2. Commit and tag:
+
+```bash
+git tag desktop-v0.2.0 && git push origin desktop-v0.2.0
+```
+
+GitHub Actions builds signed installers for Linux, Windows (MSI + NSIS) and
+macOS (Apple silicon), attaches them to a GitHub Release, and publishes
+`latest.json` — installed apps update themselves.
 
 Installers land in `smooth-desktop/src-tauri/target/release/bundle/`:
 
