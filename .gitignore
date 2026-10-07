@@ -27,6 +27,12 @@ pnpm-debug.log*
 # Vercel folder
 .vercel/
 
+# --- Tauri desktop app (smooth-desktop/) ---
+smooth-desktop/node_modules/
+smooth-desktop/src-tauri/target/
+smooth-desktop/src-tauri/gen/schemas/
+
+
 # --- Flutter app (app/) ---
 app/build/
 app/.dart_tool/
