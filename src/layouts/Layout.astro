@@ -33,6 +33,14 @@ const { posts = null } = Astro.props;
 			document.addEventListener('astro:after-swap', applyTheme);
 		</script>
 		<script>
+			// Desktop (Tauri) shell: the Rust side sets this flag via an
+			// initialization script before any page code runs. The import is
+			// dynamic, so browsers never download the shell chunk at all.
+			if (window.__UNMINDFUL_DESKTOP__) {
+				import('../components/desktop/appSurface.ts');
+			}
+		</script>
+		<script>
 			if ('serviceWorker' in navigator) {
 				window.addEventListener('load', () => {
 					navigator.serviceWorker.register('/dev-sw.js?dev-sw', { type: 'module' }).catch(() => {

@@ -9,6 +9,8 @@
   "app": {
     "windows": [
       {
+        "create": false,
+        "label": "main",
         "title": "unmindful",
         "url": "https://unmindful.vercel.app",
         "width": 1180,
